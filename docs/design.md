@@ -1,9 +1,9 @@
-# Element Android design
+# Seventwos Workspace Android design
 
 <!--- TOC -->
 
 * [Introduction](#introduction)
-* [How to import from Figma to the Element Android project](#how-to-import-from-figma-to-the-element-android-project)
+* [How to import from Figma to this Android project](#how-to-import-from-figma-to-this-android-project)
   * [Colors](#colors)
   * [Text](#text)
   * [Dimension, position and margin](#dimension-position-and-margin)
@@ -31,16 +31,16 @@
 
 ## Introduction
 
-Design at element.io is done using Figma - https://www.figma.com
+Design work for this project is done using Figma - https://www.figma.com
 You will find guidance to build using interface on the [Compound documentation – Element's design system](https://compound.element.io)
 
-## How to import from Figma to the Element Android project
+## How to import from Figma to this Android project
 
 Integration should be done using the Android development best practice, and should follow the existing convention in the code.
 
 ### Colors
 
-Element Android already contains all the colors which can be used by the designer, in the module `ui-style`.
+This project already contains all the colors which can be used by the designer, in the module `ui-style`.
 Some of them depend on the theme, so ensure to use theme attributes and not colors directly.
 
 A comprehensive [color definition documentation](https://compound.element.io/?path=/docs/tokens-color-palettes--docs) is available in Compound.
@@ -50,7 +50,7 @@ A comprehensive [color definition documentation](https://compound.element.io/?pa
 
  - click on a text on Figma
  - on the right panel, information about the style and colors are displayed
- - in Element Android, text style are already defined, generally you should not create new style
+ - in this project, text styles are already defined, generally you should not create new style
  - apply the style and the color to the layout
 
 ### Dimension, position and margin
@@ -107,9 +107,7 @@ https://developer.android.com/studio/write/convert-webp
 
 Figma links can be included in the layout, for future reference, but it is also OK to add a paragraph below here, to centralize the information
 
-Main entry point: https://www.figma.com/files/project/5612863/Element?fuid=779371459522484071
-
-Note: all the Figma links are not publicly available.
+Note: the Figma links below (inherited from the upstream Element X project) are historical references and are not publicly available; this project does not have its own equivalent Figma project set up yet.
 
 ### Compound
 

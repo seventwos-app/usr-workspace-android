@@ -136,6 +136,8 @@ class UserProfileFlowNode(
                     buildContext = buildContext,
                     params = params,
                     callback = object : OutgoingVerificationEntryPoint.Callback {
+                        override fun learnMoreUrl(): String? = null
+
                         override fun navigateToLearnMoreAboutEncryption() {
                             // No op
                         }

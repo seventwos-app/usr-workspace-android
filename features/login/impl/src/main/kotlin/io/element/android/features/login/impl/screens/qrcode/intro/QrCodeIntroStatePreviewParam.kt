@@ -24,7 +24,7 @@ open class QrCodeIntroStatePreviewParam : PreviewParameterProvider<QrCodeIntroSt
 
 fun aQrCodeIntroState(
     appName: String = "AppName",
-    desktopAppName: String = "Element",
+    desktopAppName: String = "Seventwos Workspace",
     cameraPermissionState: PermissionsState = aPermissionsState(
         showDialog = false,
         permission = Manifest.permission.CAMERA,

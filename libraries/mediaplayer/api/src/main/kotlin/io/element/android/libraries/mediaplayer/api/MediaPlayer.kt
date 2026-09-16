@@ -12,7 +12,7 @@ import io.element.android.libraries.matrix.api.core.EventId
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * A media player for Element X.
+ * A media player for Seventwos Workspace.
  */
 interface MediaPlayer : AutoCloseable {
     /**

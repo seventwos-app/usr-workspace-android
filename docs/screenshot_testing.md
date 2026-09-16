@@ -22,7 +22,7 @@
 - Install the Git LFS hooks into the project.
 
 ```shell
-# with element-android as the current working directory
+# with usr-workspace-android as the current working directory
 git lfs install --local
 ```
 

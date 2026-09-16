@@ -14,7 +14,7 @@ Installing APK build by the CI is possible
 
 ### Installing from GitHub
 
-TODO Import the script from Element Android and make it work, then update this documentation.
+TODO Add a script to install an APK from a GitHub action run, then update this documentation.
 
 To install an APK built by a GitHub action, run the script `./tools/install/installFromGitHub.sh`. You will need to pass a GitHub token to do so.
 

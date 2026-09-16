@@ -10,35 +10,38 @@
 
 ## Configuration
 
-The nightly build will contain what's on develop, in release mode, for the main variant. It is signed using a dedicated signature, and has a dedicated appId (`io.element.android.x.nightly`), so it can be installed along with the production version of Element X Android. The only other difference compared to ElementX Android is a different app name. We do not want to change the app name since it will also affect some strings in the app, and we do want to do that. (TODO today, the app name is changed.)
+The nightly build will contain what's on develop, in release mode, for the main variant. It reuses the same release signing config (the `SEVENTWOS_ANDROID_SIGNING_*` secrets) and has a `.nightly` application-id suffix, so it can be installed alongside the production version of this app. The only other difference is a different app name (`"$baseAppName nightly"`).
 
 Nightly builds are built and released to Firebase every days, and automatically.
 
-This is recommended to exclusively use this app, with your main account, instead of Element X Android, and fallback to ElementX Android just in case of regression, to discover as soon as possible any regression, and report it to the team. To avoid double notification, you may want to disable the notification from the Element Android production version. Just open Element Android, navigate to `Settings/Notifications` and uncheck `Enable notifications for this session` (TODO Not supported yet).
+This is recommended to exclusively use this app, with your main account, instead of the production build, and fall back to the production build just in case of regression, to discover as soon as possible any regression, and report it to the team. To avoid double notification, you may want to disable the notification from the production version. Just open the production build, navigate to `Settings/Notifications` and uncheck `Enable notifications for this session` (TODO Not supported yet).
 
 *Note:* Due to a limitation of Firebase, the nightly build is the universal build, which means that the size of the APK is a bit bigger, but this should not have any other side effect.
 
 ## How to register to get nightly build
 
-Click on this link and follow the instruction: [https://appdistribution.firebase.dev/i/7de2dbc61e7fb2a6](https://appdistribution.firebase.dev/i/7de2dbc61e7fb2a6)
+No Seventwos-operated Firebase App Distribution invite link is configured yet. Ask your team lead for the current distribution invite once a Seventwos Firebase project is set up.
 
 ## Build nightly manually
 
-Nightly build can be built manually from your computer. You will need to retrieved some secrets from Passbolt and add them to your file `~/.gradle/gradle.properties`:
+Nightly build can be built manually from your computer. Nightly reuses the release signing config, so set
+the same environment variables used for release builds (see `app/build.gradle.kts`), retrieving the
+secret values from your organization's secrets manager:
 
-```
-signing.element.nightly.storePassword=VALUE_FROM_PASSBOLT
-signing.element.nightly.keyId=VALUE_FROM_PASSBOLT
-signing.element.nightly.keyPassword=VALUE_FROM_PASSBOLT
+```sh
+export SEVENTWOS_ANDROID_SIGNING_KEYSTORE_PATH=VALUE_FROM_YOUR_SECRETS_MANAGER
+export SEVENTWOS_ANDROID_SIGNING_KEY_ALIAS=VALUE_FROM_YOUR_SECRETS_MANAGER
+export SEVENTWOS_ANDROID_SIGNING_KEY_PASSWORD=VALUE_FROM_YOUR_SECRETS_MANAGER
+export SEVENTWOS_ANDROID_SIGNING_STORE_PASSWORD=VALUE_FROM_YOUR_SECRETS_MANAGER
 ```
 
 You will also need to add the environment variable `FIREBASE_TOKEN`:
 
 ```sh
-export FIREBASE_TOKEN=VALUE_FROM_PASSBOLT
+export FIREBASE_TOKEN=VALUE_FROM_YOUR_SECRETS_MANAGER
 ```
 
-Then you can run the following commands (which are also used in the file for [the GitHub action](../.github/workflows/nightly.yml)):
+Then you can run the following commands (a dedicated GitHub Action for nightly builds is not currently configured in this repository; see `.github/workflows/` for the active workflows):
 
 ```sh
 git checkout develop

@@ -9,7 +9,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
-        android:name=".ElementXApplication"
+        android:name=".SeventwosWorkspaceApplication"
         android:allowBackup="false"
         android:appCategory="social"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -22,7 +22,7 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ElementX"
+        android:theme="@style/Theme.SeventwosWorkspace"
         tools:targetApi="33">
 
         <meta-data
@@ -56,7 +56,7 @@
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode"
             android:exported="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.ElementX.Splash"
+            android:theme="@style/Theme.SeventwosWorkspace.Splash"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -105,19 +105,6 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="matrix" />
-            </intent-filter>
-            <!--
-              links from matrix.to website
-            -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="element" />
-                <data android:host="user" />
-                <data android:host="room" />
             </intent-filter>
             <!--
               Conversation shortcuts offered in the Direct Share row of the system share sheet.

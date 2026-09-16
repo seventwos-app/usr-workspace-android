@@ -58,7 +58,7 @@ class QrCodeErrorViewTest : RobolectricTest() {
         onRetry: () -> Unit = EnsureNeverCalled(),
         onCancel: () -> Unit = EnsureNeverCalled(),
         errorScreenType: QrCodeErrorScreenType = QrCodeErrorScreenType.UnknownError,
-        appName: String = "Element X",
+        appName: String = "Seventwos Workspace",
     ) {
         setContent {
             QrCodeErrorView(

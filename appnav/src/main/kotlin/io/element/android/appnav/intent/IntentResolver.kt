@@ -53,7 +53,7 @@ class IntentResolver(
             .takeIf { it.action == Intent.ACTION_VIEW }
             ?.dataString
 
-        // Mobile configuration link clicked? (mobile.element.io)
+        // Mobile configuration link clicked? (workspace.seventwos.org/login)
         val mobileLoginData = actionViewData
             ?.let { loginIntentResolver.parse(it) }
         if (mobileLoginData != null) return ResolvedIntent.Login(mobileLoginData)

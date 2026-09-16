@@ -89,8 +89,8 @@ Jika Anda melanjutkan, beberapa pengaturan Anda dapat berubah."</string>
   <string name="screen_notification_settings_sound_custom_fallback">"Kustom"</string>
   <string name="screen_notification_settings_sound_custom_sound_button_title">"Suara kustom"</string>
   <string name="screen_notification_settings_sound_delete_sound_error_title">"Terjadi kesalahan saat menghapus file."</string>
-  <string name="screen_notification_settings_sound_element_default">"Pengaturan Default Element"</string>
-  <string name="screen_notification_settings_sound_element_fade">"Element Fade"</string>
+  <string name="screen_notification_settings_sound_element_default">"Pengaturan Default Seventwos"</string>
+  <string name="screen_notification_settings_sound_element_fade">"Seventwos Fade"</string>
   <string name="screen_notification_settings_sound_import_sound_error_title">"Terjadi kesalahan saat mengimpor file"</string>
   <string name="screen_notification_settings_sound_preview_sound_error_title">"Pratinjau suara peringatan bermasalah"</string>
   <string name="screen_notification_settings_sound_section_title">"Suara"</string>

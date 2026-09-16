@@ -12,7 +12,7 @@ Stay in touch with friends, family and communities with:
  • Video calling while browsing messages.
  • Interoperability with other Matrix-based apps such as FluffyChat, Cinny and many more.
 
-<b>Privacy-first<b>
+<b>Privacy-first</b>
 Unlike some other messengers from Big Tech companies, we don’t mine your data or monitor your communications.
 
 <b>Own your conversations</b>

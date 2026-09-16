@@ -37,8 +37,8 @@ import io.element.android.features.login.impl.R
 import io.element.android.features.login.impl.login.LoginModeEvent
 import io.element.android.features.login.impl.login.LoginModeView
 import io.element.android.libraries.architecture.AsyncData
-import io.element.android.libraries.designsystem.atomic.atoms.ElementLogoAtom
-import io.element.android.libraries.designsystem.atomic.atoms.ElementLogoAtomSize
+import io.element.android.libraries.designsystem.atomic.atoms.AppLogoAtom
+import io.element.android.libraries.designsystem.atomic.atoms.AppLogoAtomSize
 import io.element.android.libraries.designsystem.atomic.molecules.ButtonColumnMolecule
 import io.element.android.libraries.designsystem.atomic.pages.FlowStepPage
 import io.element.android.libraries.designsystem.atomic.pages.OnBoardingPage
@@ -209,9 +209,9 @@ private fun OnBoardingContent(state: OnBoardingState) {
                 verticalBias = -0.4f
             )
         ) {
-            ElementLogoAtom(
-                size = ElementLogoAtomSize.Large,
-                modifier = Modifier.padding(top = ElementLogoAtomSize.Large.shadowRadius / 2)
+            AppLogoAtom(
+                size = AppLogoAtomSize.Large,
+                modifier = Modifier.padding(top = AppLogoAtomSize.Large.shadowRadius / 2)
             )
         }
         Box(

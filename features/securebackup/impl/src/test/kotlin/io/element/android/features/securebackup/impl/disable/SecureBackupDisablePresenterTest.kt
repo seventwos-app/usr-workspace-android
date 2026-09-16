@@ -35,7 +35,7 @@ class SecureBackupDisablePresenterTest {
             val initialState = awaitItem()
             assertThat(initialState.backupState).isEqualTo(BackupState.UNKNOWN)
             assertThat(initialState.disableAction).isEqualTo(AsyncAction.Uninitialized)
-            assertThat(initialState.appName).isEqualTo("Element")
+            assertThat(initialState.appName).isEqualTo("Seventwos Workspace")
         }
     }
 
@@ -81,7 +81,7 @@ class SecureBackupDisablePresenterTest {
 
     private fun createSecureBackupDisablePresenter(
         encryptionService: EncryptionService = FakeEncryptionService(),
-        appName: String = "Element",
+        appName: String = "Seventwos Workspace",
     ): SecureBackupDisablePresenter {
         return SecureBackupDisablePresenter(
             encryptionService = encryptionService,

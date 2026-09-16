@@ -10,7 +10,7 @@ plugins {
 }
 
 android {
-    namespace = "io.element.android.appicon.element"
+    namespace = "io.element.android.appicon.standard"
 
     buildTypes {
         register("nightly")

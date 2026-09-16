@@ -43,7 +43,7 @@ fun SecureBackupRootView(
     onChangeClick: () -> Unit,
     onDisableClick: () -> Unit,
     onConfirmRecoveryKeyClick: () -> Unit,
-    onLearnMoreClick: () -> Unit,
+    onLearnMoreClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = rememberSnackbarHostState(snackbarMessage = state.snackbarMessage)
@@ -245,6 +245,6 @@ internal fun SecureBackupRootViewPreview(
         onChangeClick = {},
         onDisableClick = {},
         onConfirmRecoveryKeyClick = {},
-        onLearnMoreClick = {},
+        onLearnMoreClick = null,
     )
 }

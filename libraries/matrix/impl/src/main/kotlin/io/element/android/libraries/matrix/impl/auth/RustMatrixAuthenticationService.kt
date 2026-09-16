@@ -17,6 +17,7 @@ import io.element.android.libraries.androidutils.crypto.ClientSecret
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.core.extensions.mapFailure
 import io.element.android.libraries.core.extensions.runCatchingExceptions
+import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.MatrixClient
@@ -65,6 +66,7 @@ import kotlin.time.Duration.Companion.seconds
 @ContributesBinding(AppScope::class)
 @SingleIn(AppScope::class)
 class RustMatrixAuthenticationService(
+    private val buildMeta: BuildMeta,
     private val sessionPathsFactory: SessionPathsFactory,
     private val coroutineDispatchers: CoroutineDispatchers,
     private val sessionStore: SessionStore,
@@ -156,7 +158,7 @@ class RustMatrixAuthenticationService(
                 client.login(
                     username = username,
                     password = password,
-                    initialDeviceName = "Element X Android",
+                    initialDeviceName = "${buildMeta.applicationName} Android",
                     deviceId = null,
                 )
                 // Ensure that the user is not already logged in with the same account

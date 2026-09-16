@@ -46,7 +46,7 @@ Other useful documentation:
 Matrix website: [matrix.org](https://matrix.org), [discover page](https://matrix.org/discover).
 *Note*: Matrix.org is also hosting a homeserver ([.well-known file](https://matrix.org/.well-known/matrix/client)).
 The reference homeserver (this is how Matrix servers are called) implementation is [Synapse](https://github.com/matrix-org/synapse/). But other implementations
-exist. The Matrix specification is here to ensure that any Matrix client, such as Element Android and its SDK can talk to any Matrix server.
+exist. The Matrix specification is here to ensure that any Matrix client, such as this application and its SDK can talk to any Matrix server.
 
 Have a quick look to the client-server API documentation: [Client-server documentation](https://spec.matrix.org/v1.3/client-server-api/). Other network API
 exist, the list is here: (https://spec.matrix.org/latest/)
@@ -192,7 +192,6 @@ A few details about some modules:
 
 - `libraries-core` module contains utility classes;
 - `libraries-designsystem` module contains Composables which can be used across the app (theme, etc.);
-- `libraries-elementresources` module contains resource from Element Android (mainly strings);
 - `libraries-matrix` module contains wrappers around the Matrix Rust SDK.
 
 Most of the time a feature module should not know anything about other feature module.
@@ -438,7 +437,7 @@ Rageshake can be very useful to get logs from a release version of the applicati
 
 > [!WARNING]
 > Developer options can result in unexpected application behavior or destructive
-> actions. Use with caution and only if you are instructed by someone at Element or are
+> actions. Use with caution and only if you are instructed by someone on the Seventwos team or are
 > already familiar.
 
 These options provide advanced controls for testing and debugging. They are visible by

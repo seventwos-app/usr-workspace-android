@@ -1,5 +1,11 @@
 This file contains some rough notes about OAuth implementation, with some examples of actual data.
 
+> **Note:** the "Android:" example block below was captured from the original upstream
+> Element X implementation and is kept for historical reference only. In this app, `clientName`
+> is derived dynamically from `BuildMeta.applicationName` (currently "Seventwos Workspace"), and
+> `clientUri`/`tosUri`/`policyUri` come from `BuildConfig`/`OAuthConfig`, not from hardcoded
+> element.io values. See `OAuthConfigurationProvider.kt`.
+
 [ios implementation](https://github.com/element-hq/element-x-ios/compare/develop...doug/oidc-temp)
 
 Rust sdk branch: https://github.com/matrix-org/matrix-rust-sdk/tree/oidc-ffi

@@ -97,6 +97,8 @@ class FtueSessionVerificationFlowNode(
                         backstack.push(NavTarget.ResetIdentity)
                     }
 
+                    override fun learnMoreUrl() = LearnMoreConfig.DEVICE_VERIFICATION_URL
+
                     override fun navigateToLearnMoreAboutEncryption() {
                         learnMoreUrl.value = LearnMoreConfig.DEVICE_VERIFICATION_URL
                     }

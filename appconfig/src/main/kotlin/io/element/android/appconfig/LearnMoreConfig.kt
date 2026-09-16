@@ -8,10 +8,18 @@
 
 package io.element.android.appconfig
 
+/**
+ * "Learn more" destinations for in-app help topics.
+ *
+ * These previously pointed at Element's own help site (element.io). Seventwos does not yet
+ * publish equivalent help pages, so each URL is `null` until a Seventwos-owned page exists for
+ * that topic. Callers must treat `null` as "no link available" and fail closed (hide or disable
+ * the affordance) rather than falling back to an upstream Element URL.
+ */
 object LearnMoreConfig {
-    const val ENCRYPTION_URL: String = "https://element.io/help#encryption"
-    const val DEVICE_VERIFICATION_URL: String = "https://element.io/help#encryption-device-verification"
-    const val SECURE_BACKUP_URL: String = "https://element.io/help#encryption5"
-    const val IDENTITY_CHANGE_URL: String = "https://element.io/help#encryption18"
-    const val HISTORY_VISIBLE_URL: String = "https://element.io/en/help#e2ee-history-sharing"
+    val ENCRYPTION_URL: String? = null
+    val DEVICE_VERIFICATION_URL: String? = null
+    val SECURE_BACKUP_URL: String? = null
+    val IDENTITY_CHANGE_URL: String? = null
+    val HISTORY_VISIBLE_URL: String? = null
 }

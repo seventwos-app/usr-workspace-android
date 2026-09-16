@@ -88,8 +88,8 @@ Wenn du fortfährst, können sich einige deiner Einstellungen ändern."</string>
   <string name="screen_notification_settings_sound_custom_fallback">"Benutzerdefiniert"</string>
   <string name="screen_notification_settings_sound_custom_sound_button_title">"Eigener Ton …"</string>
   <string name="screen_notification_settings_sound_delete_sound_error_title">"Fehler beim Löschen der Datei"</string>
-  <string name="screen_notification_settings_sound_element_default">"Element-Standard"</string>
-  <string name="screen_notification_settings_sound_element_fade">"Element Fade"</string>
+  <string name="screen_notification_settings_sound_element_default">"Seventwos-Standard"</string>
+  <string name="screen_notification_settings_sound_element_fade">"Seventwos Fade"</string>
   <string name="screen_notification_settings_sound_import_sound_error_title">"Fehler beim Importieren der Datei"</string>
   <string name="screen_notification_settings_sound_preview_sound_error_title">"Fehler beim Abspielen der Hinweiston-Vorschau"</string>
   <string name="screen_notification_settings_sound_section_title">"Ton"</string>

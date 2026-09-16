@@ -9,9 +9,9 @@ package io.element.android.x.di
 
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
-import io.element.android.x.ElementXApplication
+import io.element.android.x.SeventwosWorkspaceApplication
 
 @ContributesTo(AppScope::class)
 interface ApplicationBindings {
-    fun inject(application: ElementXApplication)
+    fun inject(application: SeventwosWorkspaceApplication)
 }

@@ -15,7 +15,7 @@ See [Android release readiness](release_readiness.md) for the required build inp
   * [How does the homeserver know when to notify a client?](#how-does-the-homeserver-know-when-to-notify-a-client)
   * [Push vs privacy, and mitigation](#push-vs-privacy-and-mitigation)
   * [Background processing limitations](#background-processing-limitations)
-* [Element Notification implementations](#element-notification-implementations)
+* [Notification implementations](#notification-implementations)
   * [Requirements](#requirements)
   * [Foreground sync mode (Gplay and F-Droid)](#foreground-sync-mode-gplay-and-f-droid)
   * [Push (FCM) received in background](#push-fcm-received-in-background)
@@ -58,7 +58,7 @@ By default, this is 0, so the server will return immediately even if the respons
 
 **delay** is a client preference. When the server responds to a sync request, the client waits for `delay`before calling a new sync.
 
-When the Element Android app is open (i.e in foreground state), the default timeout is 30 seconds, and delay is 0.
+When the app is open (i.e in foreground state), the default timeout is 30 seconds, and delay is 0.
 
 ### How does a mobile app receives push notification
 
@@ -94,7 +94,7 @@ This need some disambiguation, because it is the source of common confusion:
 In order to send a push to a mobile, App developers need to have a server that will use the FCM APIs, and these APIs requires authentication!
 This server is called a **Push Gateway** in the matrix world
 
-That means that Element Android, a matrix client created by New Vector, is using a **Push Gateway** with the needed credentials (FCM API secret Key) in order to send push to the New Vector client.
+That means that a matrix client relying on FCM has to use a **Push Gateway** with the needed credentials (FCM API secret Key) in order to send push to that client.
 
 If you create your own matrix client, you will also need to deploy an instance of a **Push Gateway** with the credentials needed to use FCM for your app.
 
@@ -140,7 +140,7 @@ A homeserver can be configured with default rules (for Direct messages, group me
 
 There are different kind of push rules, it can be per room (each new message on this room should be notified), it can also define a pattern that a message should match (when you are mentioned, or key word based).
 
-Notifications have 2 'levels' (`highlighted = true/false sound = default/custom`). In Element these notifications level are reflected as Noisy/Silent. 
+Notifications have 2 'levels' (`highlighted = true/false sound = default/custom`). In this app these notifications level are reflected as Noisy/Silent.
 
 **What about encrypted messages?**
 
@@ -159,65 +159,65 @@ App developers usually mitigate this by sending a `silent notification`, that is
 
 A mobile applications process live in a managed word, meaning that its process can be limited (e.g no network access), stopped or killed at almost anytime by the Operating System.
 
-In order to improve the battery life of their devices some constructors started to implement mechanism to drastically limit background execution of applications (e.g MIUI/Xiaomi restrictions, Sony stamina mode). 
+In order to improve the battery life of their devices some constructors started to implement mechanism to drastically limit background execution of applications (e.g MIUI/Xiaomi restrictions, Sony stamina mode).
 Then starting android M, android has also put more focus on improving device performances, introducing several IDLE modes, App-Standby, Light Doze, Doze.
 
 In a nutshell, apps can't do much in background now.
 
 If the devices is not plugged and stays IDLE for a certain amount of time, radio (mobile connectivity) and CPU can/will be turned off.
 
-For an application like Element, where users can receive important information at anytime, the best option is to rely on a push system (Google's Firebase Message a.k.a FCM). FCM high priority push can wake up the device and whitelist an application to perform background task (for a limited but unspecified amount of time). 
+For an application like this one, where users can receive important information at anytime, the best option is to rely on a push system (Google's Firebase Message a.k.a FCM). FCM high priority push can wake up the device and whitelist an application to perform background task (for a limited but unspecified amount of time).
 
 Notice that this is still evolving, and in future versions application that has been 'background restricted' by users won't be able to wake up even when a high priority push is received. Also high priority notifications could be rate limited (not defined anywhere)
 
-It's getting a lot more complicated when you cannot rely on FCM (because: closed sources, network/firewall restrictions, privacy concerns). 
-The documentation on this subject is vague, and as per our experiments not always exact, also device's behaviour is fragmented. 
+It's getting a lot more complicated when you cannot rely on FCM (because: closed sources, network/firewall restrictions, privacy concerns).
+The documentation on this subject is vague, and as per our experiments not always exact, also device's behaviour is fragmented.
 
 It is getting more and more complex to have reliable notifications when FCM is not used.
 
-## Element Notification implementations
+## Notification implementations
 
 ### Requirements
 
-Element Android must work with and without FCM.
-* The Element android app published on F-Droid do not rely on FCM (all related dependencies are not present)
-* The Element android app published on google play rely on FCM, with a fallback mode when FCM registration has failed (e.g outdated or missing Google Play Services)
+The app must work with and without FCM.
+* The F-Droid build does not rely on FCM (all related dependencies are not present)
+* The Google Play build relies on FCM, with a fallback mode when FCM registration has failed (e.g outdated or missing Google Play Services)
 
 ### Foreground sync mode (Gplay and F-Droid)
 
-When in foreground, Element performs sync continuously with a timeout value set to 10 seconds (see HttpPooling).
+When in foreground, the app performs sync continuously with a timeout value set to 10 seconds (see HttpPooling).
 
-As this mode does not need to live beyond the scope of the application, and as per Google recommendation, Element uses the internal app resources (Thread and Timers) to perform the syncs. 
+As this mode does not need to live beyond the scope of the application, and as per Google recommendation, the app uses the internal app resources (Thread and Timers) to perform the syncs.
 
 This mode is turned on when the app enters foreground, and off when enters background.
 
-In background, and depending on whether push is available or not, Element will use different methods to perform the syncs (Workers / Alarms / Service)
+In background, and depending on whether push is available or not, the app will use different methods to perform the syncs (Workers / Alarms / Service)
 
-### Push (FCM) received in background 
+### Push (FCM) received in background
 
-In order to enable Push, Element must first get a push token from the firebase SDK, then register a pusher with this token on the homeserver.
+In order to enable Push, the app must first get a push token from the firebase SDK, then register a pusher with this token on the homeserver.
 
-When a message should be notified to a user,  the user's homeserver notifies the registered `push gateway` for Element, that is [sygnal](https://github.com/matrix-org/sygnal) _- The reference implementation for push gateways -_ hosted by matrix.org. 
+When a message should be notified to a user,  the user's homeserver notifies the `push gateway` registered for the app, for instance an instance of [sygnal](https://github.com/matrix-org/sygnal) _- The reference implementation for push gateways -_ operated by the app publisher.
 
-This sygnal instance is configured with the required FCM API authentication token, and will then use the FCM API in order to notify the user's device running Element.
+This sygnal instance is configured with the required FCM API authentication token, and will then use the FCM API in order to notify the user's device running the app.
 
 ```
-Homeserver ----> Sygnal (configured for Element) ----> FCM ----> Element
+Homeserver ----> Sygnal (configured for the app) ----> FCM ----> App
 ```
 
 The push gateway is configured to only send  `(eventId,roomId)` in the push payload (for better [privacy](#push-vs-privacy-and-mitigation)).
 
-Element needs then to synchronise with the user's homeserver, in order to resolve the event and create a notification.
+The app needs then to synchronise with the user's homeserver, in order to resolve the event and create a notification.
 
-As per [Google recommendation](https://android-developers.googleblog.com/2018/09/notifying-your-users-with-fcm.html), Element will then use the WorkManager API in order to trigger a background sync. 
+As per [Google recommendation](https://android-developers.googleblog.com/2018/09/notifying-your-users-with-fcm.html), the app will then use the WorkManager API in order to trigger a background sync.
 
-**Google recommendations:** 
+**Google recommendations:**
 >  We recommend using FCM messages in combination with the WorkManager 1 or JobScheduler API
 
 >  Avoid background services. One common pitfall is using a background service to fetch data in the FCM message handler, since background service will be stopped by the system per recent changes to Google Play Policy
 
 ```
-Homeserver ----> Sygnal ----> FCM ----> Element
+Homeserver ----> Sygnal ----> FCM ----> App
                                         (Sync) ----> Homeserver
                                                <----
                                         Display notification
@@ -225,24 +225,24 @@ Homeserver ----> Sygnal ----> FCM ----> Element
 
 **Possible outcomes**
 
-Upon reception of the FCM push, Element will perform a sync call to the homeserver, during this process it is possible that:
+Upon reception of the FCM push, the app will perform a sync call to the homeserver, during this process it is possible that:
   * Happy path, the sync is performed, the message resolved and displayed in the notification drawer
   * The notified message is not in the sync. Can happen if a lot of things did happen since the push (`gappy sync`)
   * The sync generates additional notifications (e.g an encrypted message where the user is mentioned detected locally)
   * The sync takes too long and the process is killed before completion, or network is not reliable and the sync fails.
 
-Element implements several strategies in these cases (TODO document)
+The app implements several strategies in these cases (TODO document)
 
 ### FCM Fallback mode
 
-It is possible that Element is not able to get a FCM push token.
+It is possible that the app is not able to get a FCM push token.
 Common errors (among several others) that can cause that:
 * Google Play Services is outdated
 * Google Play Service fails in someways with FCM servers (infamous `SERVICE_NOT_AVAILABLE`)
 
-If Element is able to detect one of this cases, it will notifies it to the users and when possible help him fix it via a dedicated troubleshoot screen.
+If the app is able to detect one of this cases, it will notifies it to the users and when possible help him fix it via a dedicated troubleshoot screen.
 
-Meanwhile, in order to offer a minimal service, and as per Google's recommendation for background activities, Element will launch periodic background sync in order to stays in sync with servers.
+Meanwhile, in order to offer a minimal service, and as per Google's recommendation for background activities, the app will launch periodic background sync in order to stays in sync with servers.
 
 The fallback mode is impacted by all the battery life saving mechanism implemented by android. Meaning that if the app is not used for a certain amount of time (`App-Standby`), or the device stays still and unplugged (`Light Doze`) , the sync will become less frequent.
 
@@ -256,7 +256,7 @@ The fallback mode is supposed to be a temporary state waiting for the user to fi
 
 ### F-Droid background Mode
 
-The F-Droid Element flavor has no dependencies to FCM, therefore cannot relies on Push.
+The F-Droid flavor has no dependencies to FCM, therefore cannot relies on Push.
 
 Also Google's recommended background processing method cannot be applied. This is because all of these methods are affected by IDLE modes, and will result on the user not being notified at all when the app is in a Doze mode (only in maintenance windows that could happens only after hours).
 
@@ -270,7 +270,7 @@ F-Droid version will schedule alarms that will then trigger a Broadcast Receiver
 
 Depending on the system status (or device make),  it is still possible that the app is not given enough time to launch the service, or that the radio is still turned off thus preventing the sync to success (that's why Alarms are not recommended for network related tasks).
 
-That is why on Element F-Droid, the broadcast receiver will acquire a temporary WAKE_LOCK for several seconds (thus securing cpu/network), and launch the service in foreground. The service performs the sync.
+That is why on F-Droid, the broadcast receiver will acquire a temporary WAKE_LOCK for several seconds (thus securing cpu/network), and launch the service in foreground. The service performs the sync.
 
 Note that foreground services require to put a notification informing the user that the app is doing something even if not launched).
 
@@ -283,4 +283,3 @@ Configure Sygnal to send or not notifications to all user devices.
 **Notifications > Enable notifications for this device**
 
 Disable notifications locally. The push server will continue to send notifications to the device but this one will ignore them.
-

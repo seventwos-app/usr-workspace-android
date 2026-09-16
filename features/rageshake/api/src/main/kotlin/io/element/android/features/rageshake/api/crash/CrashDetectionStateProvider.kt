@@ -9,7 +9,7 @@
 package io.element.android.features.rageshake.api.crash
 
 fun aCrashDetectionState() = CrashDetectionState(
-    appName = "Element",
+    appName = "Seventwos Workspace",
     crashDetected = false,
     eventSink = {}
 )

@@ -93,8 +93,8 @@ Niektóre ustawienia mogą ulec zmianie, jeśli kontynuujesz."</string>
   <string name="screen_notification_settings_sound_custom_fallback">"Własny"</string>
   <string name="screen_notification_settings_sound_custom_sound_button_title">"Własny dźwięk…"</string>
   <string name="screen_notification_settings_sound_delete_sound_error_title">"Błąd usuwania pliku"</string>
-  <string name="screen_notification_settings_sound_element_default">"Domyślny Element"</string>
-  <string name="screen_notification_settings_sound_element_fade">"Element Fade"</string>
+  <string name="screen_notification_settings_sound_element_default">"Domyślny Seventwos"</string>
+  <string name="screen_notification_settings_sound_element_fade">"Seventwos Fade"</string>
   <string name="screen_notification_settings_sound_import_sound_error_title">"Błąd importowania pliku"</string>
   <string name="screen_notification_settings_sound_preview_sound_error_title">"Wystąpił błąd podczas podglądania dźwięku powiadomień"</string>
   <string name="screen_notification_settings_sound_section_title">"Dźwięk"</string>

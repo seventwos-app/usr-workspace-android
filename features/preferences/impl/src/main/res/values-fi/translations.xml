@@ -88,8 +88,8 @@ Jos jatkat, jotkin asetukset saattavat muuttua."</string>
   <string name="screen_notification_settings_sound_custom_fallback">"Mukautettu"</string>
   <string name="screen_notification_settings_sound_custom_sound_button_title">"Mukautettu ääni…"</string>
   <string name="screen_notification_settings_sound_delete_sound_error_title">"Virhe tiedoston poistamisessa"</string>
-  <string name="screen_notification_settings_sound_element_default">"Elementin oletus"</string>
-  <string name="screen_notification_settings_sound_element_fade">"Element Fade"</string>
+  <string name="screen_notification_settings_sound_element_default">"Seventwosin oletus"</string>
+  <string name="screen_notification_settings_sound_element_fade">"Seventwos Fade"</string>
   <string name="screen_notification_settings_sound_import_sound_error_title">"Virhe tiedoston tuonnissa"</string>
   <string name="screen_notification_settings_sound_preview_sound_error_title">"Ongelma ilmoitusäänen esikatselussa"</string>
   <string name="screen_notification_settings_sound_section_title">"Ääni"</string>

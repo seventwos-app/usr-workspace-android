@@ -8,10 +8,10 @@
 
 package io.element.android.libraries.designsystem.atomic.atoms
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,21 +21,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
+import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.architecture.coverage.ExcludeFromCoverage
-import io.element.android.libraries.designsystem.R
 import io.element.android.libraries.designsystem.modifiers.blurCompat
 import io.element.android.libraries.designsystem.modifiers.blurredShapeShadow
 import io.element.android.libraries.designsystem.modifiers.canUseBlurMaskFilter
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
+import io.element.android.libraries.designsystem.theme.components.Icon
 
 @Composable
-fun ElementLogoAtom(
-    size: ElementLogoAtomSize,
+fun AppLogoAtom(
+    size: AppLogoAtomSize,
     modifier: Modifier = Modifier,
     useBlurredShadow: Boolean = canUseBlurMaskFilter(),
     darkTheme: Boolean = ElementTheme.isLightTheme.not(),
@@ -81,7 +81,7 @@ fun ElementLogoAtom(
                 .background(backgroundColor)
                 .blurCompat(blur)
         )
-        Image(
+        Icon(
             modifier = Modifier
                 .size(size.logoSize)
                 // Do the same double shadow than on Figma...
@@ -96,14 +96,18 @@ fun ElementLogoAtom(
                     clip = false,
                     shape = CircleShape,
                     ambientColor = Color(0x80000000),
-                ),
-            painter = painterResource(id = R.drawable.element_logo),
-            contentDescription = null
+                )
+                .clip(CircleShape)
+                .background(ElementTheme.colors.bgSubtlePrimary)
+                .padding(size.logoSize * 0.2f),
+            imageVector = CompoundIcons.ChatSolid(),
+            contentDescription = null,
+            tint = ElementTheme.colors.iconPrimary,
         )
     }
 }
 
-sealed class ElementLogoAtomSize(
+sealed class AppLogoAtomSize(
     val outerSize: Dp,
     val logoSize: Dp,
     val cornerRadius: Dp,
@@ -114,7 +118,7 @@ sealed class ElementLogoAtomSize(
     val shadowColorLight: Color,
     val shadowRadius: Dp,
 ) {
-    data object Medium : ElementLogoAtomSize(
+    data object Medium : AppLogoAtomSize(
         outerSize = 120.dp,
         logoSize = 83.5.dp,
         cornerRadius = 33.dp,
@@ -126,7 +130,7 @@ sealed class ElementLogoAtomSize(
         shadowRadius = 32.dp,
     )
 
-    data object Large : ElementLogoAtomSize(
+    data object Large : AppLogoAtomSize(
         outerSize = 158.dp,
         logoSize = 110.dp,
         cornerRadius = 44.dp,
@@ -141,37 +145,37 @@ sealed class ElementLogoAtomSize(
 
 @Composable
 @PreviewsDayNight
-internal fun ElementLogoAtomMediumPreview() = ElementPreview {
-    ContentToPreview(ElementLogoAtomSize.Medium)
+internal fun AppLogoAtomMediumPreview() = ElementPreview {
+    ContentToPreview(AppLogoAtomSize.Medium)
 }
 
 @Composable
 @PreviewsDayNight
-internal fun ElementLogoAtomLargePreview() = ElementPreview {
-    ContentToPreview(ElementLogoAtomSize.Large)
+internal fun AppLogoAtomLargePreview() = ElementPreview {
+    ContentToPreview(AppLogoAtomSize.Large)
 }
 
 @Composable
 @PreviewsDayNight
-internal fun ElementLogoAtomMediumNoBlurShadowPreview() = ElementPreview {
-    ContentToPreview(ElementLogoAtomSize.Medium, useBlurredShadow = false)
+internal fun AppLogoAtomMediumNoBlurShadowPreview() = ElementPreview {
+    ContentToPreview(AppLogoAtomSize.Medium, useBlurredShadow = false)
 }
 
 @Composable
 @PreviewsDayNight
-internal fun ElementLogoAtomLargeNoBlurShadowPreview() = ElementPreview {
-    ContentToPreview(ElementLogoAtomSize.Large, useBlurredShadow = false)
+internal fun AppLogoAtomLargeNoBlurShadowPreview() = ElementPreview {
+    ContentToPreview(AppLogoAtomSize.Large, useBlurredShadow = false)
 }
 
 @ExcludeFromCoverage
 @Composable
-private fun ContentToPreview(elementLogoAtomSize: ElementLogoAtomSize, useBlurredShadow: Boolean = true) {
+private fun ContentToPreview(elementLogoAtomSize: AppLogoAtomSize, useBlurredShadow: Boolean = true) {
     Box(
         Modifier
             .size(elementLogoAtomSize.outerSize + elementLogoAtomSize.shadowRadius * 2)
             .background(ElementTheme.colors.bgSubtlePrimary),
         contentAlignment = Alignment.Center
     ) {
-        ElementLogoAtom(elementLogoAtomSize, useBlurredShadow = useBlurredShadow)
+        AppLogoAtom(elementLogoAtomSize, useBlurredShadow = useBlurredShadow)
     }
 }

@@ -19,9 +19,9 @@ class DefaultAppPreferencesStoreTest {
     private val buildMeta = BuildMeta(
         buildType = BuildType.DEBUG,
         isDebuggable = true,
-        applicationName = "Element X",
-        productionApplicationName = "Element",
-        desktopApplicationName = "Element Desktop",
+        applicationName = "Seventwos Workspace",
+        productionApplicationName = "Seventwos Workspace",
+        desktopApplicationName = "Seventwos Workspace Desktop",
         applicationId = "io.element.android",
         isEnterpriseBuild = false,
         lowPrivacyLoggingEnabled = false,

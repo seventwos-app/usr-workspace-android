@@ -61,7 +61,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 
-private const val A_LOGIN_LINK = "https://mobile.element.io/element/?account_provider=example.com&login_hint=mxid:@alice:example.com"
+private const val A_LOGIN_LINK = "https://workspace.seventwos.org/login?account_provider=example.com&login_hint=mxid:@alice:example.com"
 
 private val A_LOGIN_PARAMS = LoginParams(
     accountProvider = "example.com",

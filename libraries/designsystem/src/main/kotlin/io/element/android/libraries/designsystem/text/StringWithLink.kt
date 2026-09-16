@@ -21,31 +21,33 @@ import io.element.android.libraries.ui.strings.CommonStrings
 @Composable
 fun stringWithLink(
     @StringRes textRes: Int,
-    url: String,
+    url: String?,
     onLinkClick: (String) -> Unit,
     @StringRes linkTextRes: Int = CommonStrings.action_learn_more,
 ) = buildAnnotatedString {
     val learnMoreStr = stringResource(linkTextRes)
     val fullText = stringResource(textRes, learnMoreStr)
     append(fullText)
-    val learnMoreStartIndex = fullText.lastIndexOf(learnMoreStr)
-    addStyle(
-        style = SpanStyle(
-            textDecoration = TextDecoration.Underline,
-            fontWeight = FontWeight.Bold,
-            color = ElementTheme.colors.textPrimary
-        ),
-        start = learnMoreStartIndex,
-        end = learnMoreStartIndex + learnMoreStr.length,
-    )
-    addLink(
-        url = LinkAnnotation.Url(
-            url = url,
-            linkInteractionListener = {
-                onLinkClick(url)
-            }
-        ),
-        start = learnMoreStartIndex,
-        end = learnMoreStartIndex + learnMoreStr.length,
-    )
+    if (url != null) {
+        val learnMoreStartIndex = fullText.lastIndexOf(learnMoreStr)
+        addStyle(
+            style = SpanStyle(
+                textDecoration = TextDecoration.Underline,
+                fontWeight = FontWeight.Bold,
+                color = ElementTheme.colors.textPrimary
+            ),
+            start = learnMoreStartIndex,
+            end = learnMoreStartIndex + learnMoreStr.length,
+        )
+        addLink(
+            url = LinkAnnotation.Url(
+                url = url,
+                linkInteractionListener = {
+                    onLinkClick(url)
+                }
+            ),
+            start = learnMoreStartIndex,
+            end = learnMoreStartIndex + learnMoreStr.length,
+        )
+    }
 }

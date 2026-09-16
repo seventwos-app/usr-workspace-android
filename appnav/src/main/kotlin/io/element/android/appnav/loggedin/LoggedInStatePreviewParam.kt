@@ -30,7 +30,7 @@ fun aLoggedInState(
     syncIndicatorState: SyncIndicatorState = SyncIndicatorState.Hidden,
     pusherRegistrationState: AsyncData<Unit> = AsyncData.Uninitialized,
     forceNativeSlidingSyncMigration: Boolean = false,
-    appName: String = "Element X",
+    appName: String = "Seventwos Workspace",
     localNetworkPermissionDialog: LocalNetworkPermissionDialog = LocalNetworkPermissionDialog.None,
 ) = LoggedInState(
     syncIndicatorState = syncIndicatorState,

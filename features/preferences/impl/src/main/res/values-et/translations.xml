@@ -88,7 +88,7 @@ Kui sa jätkad muutmist, siis võivad muutuda ka need peidetud eelistused."</str
   <string name="screen_notification_settings_sound_custom_fallback">"Kohandatud"</string>
   <string name="screen_notification_settings_sound_custom_sound_button_title">"Sinu valitud helin…"</string>
   <string name="screen_notification_settings_sound_delete_sound_error_title">"Viga faili kustutamisel"</string>
-  <string name="screen_notification_settings_sound_element_default">"Elementi vaikimisi väärtus"</string>
+  <string name="screen_notification_settings_sound_element_default">"Seventwosi vaikimisi väärtus"</string>
   <string name="screen_notification_settings_sound_element_fade">"Elemendi hajumine"</string>
   <string name="screen_notification_settings_sound_import_sound_error_title">"Viga faili importimisel"</string>
   <string name="screen_notification_settings_sound_preview_sound_error_title">"Viga helina eelvaate esitamisel"</string>

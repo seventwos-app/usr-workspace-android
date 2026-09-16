@@ -47,7 +47,7 @@ dependencies {
     allLibrariesImpl()
     allServicesImpl()
     allFeaturesImpl(project)
-    implementation(projects.appicon.element)
+    implementation(projects.appicon.default)
     implementation(projects.appicon.enterprise)
 
     testImplementation(libs.test.junit)

@@ -109,7 +109,7 @@ android {
     logger.warnInBox("Building ${defaultConfig.applicationId} ($baseAppName) [$buildType]")
 
     buildTypes {
-        val oAuthRedirectSchemeBase = BuildTimeConfig.METADATA_HOST_REVERSED ?: "io.element.android"
+        val oAuthRedirectSchemeBase = BuildTimeConfig.METADATA_HOST_REVERSED ?: BuildTimeConfig.APPLICATION_ID
         getByName("debug") {
             resValue("string", "app_name", "$baseAppName dbg")
             resValue(
@@ -266,7 +266,7 @@ dependencies {
         implementation(projects.appicon.enterprise)
     } else {
         implementation(projects.features.enterprise.implFoss)
-        implementation(projects.appicon.element)
+        implementation(projects.appicon.default)
     }
     allFeaturesImpl(project)
     implementation(projects.features.migration.api)
