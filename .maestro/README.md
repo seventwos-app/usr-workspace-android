@@ -52,8 +52,8 @@ Also, if updating the application code, do not forget to deploy again the applic
 
 ## CI
 
-The CI is running maestro using the workflow `.github/worflow/maestro.yaml` and [maestro cloud](https://cloud.mobile.dev/). For now we are limited to 100 runs a month.
-Some GitHub secrets are used to be able to do that: `MAESTRO_CLOUD_API_KEY`, for now api key from `benoitm@element.io` maestro cloud account, and `MATRIX_MAESTRO_ACCOUNT_PASSWORD` which is the password of the account `@maestroelement:matrix.org`. This account contains a room `MyRoom` to be able to run the maestro test suite.
+The CI can run Maestro using the workflow `.github/workflows/maestro.yaml` and [Maestro Cloud](https://cloud.mobile.dev/).
+Configure `MAESTRO_CLOUD_API_KEY` and `MATRIX_MAESTRO_ACCOUNT_PASSWORD` with Seventwos-owned test infrastructure before enabling cloud runs. Do not reuse inherited upstream accounts.
 
 ## iOS
 
