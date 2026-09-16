@@ -58,7 +58,6 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/develop' }}
       - name: Assemble debug APKs
         if: ${{ matrix.variant == 'debug' }}
-        env:
         run: ./gradlew :app:assembleGplayDebug app:assembleFDroidDebug -PallWarningsAsErrors=true $CI_GRADLE_ARG_PROPERTIES
       - name: Upload debug APKs
         if: ${{ matrix.variant == 'debug' }}

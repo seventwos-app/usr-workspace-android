@@ -1,1 +1,11 @@
-* @a-tcp
+* @seventwos-app/engineering
+
+# Security policy, automation, release configuration, and network policy require Security review.
+/SECURITY.md @seventwos-app/engineering @seventwos-app/security
+/.github/ @seventwos-app/engineering @seventwos-app/security
+/app/src/main/res/xml/network_security_config.xml @seventwos-app/engineering @seventwos-app/security
+/tools/release/ @seventwos-app/engineering @seventwos-app/security
+/features/login/ @seventwos-app/engineering @seventwos-app/security
+/features/securebackup/ @seventwos-app/engineering @seventwos-app/security
+/features/securityandprivacy/ @seventwos-app/engineering @seventwos-app/security
+/features/verifysession/ @seventwos-app/engineering @seventwos-app/security
