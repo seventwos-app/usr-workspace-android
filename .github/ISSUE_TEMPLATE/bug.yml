@@ -1,5 +1,5 @@
-name: Bug report for the Element X Android app
-description: Report any issues that you have found with the Element X app. Please [check open issues](https://github.com/element-hq/element-x-android/issues) first, in case it has already been reported.
+name: Bug report for Seventwos Workspace for Android
+description: Report an issue with Seventwos Workspace for Android. Please [check open issues](https://github.com/seventwos-app/usr-workspace-android/issues) first, in case it has already been reported.
 labels: [T-Defect]
 body:
   - type: markdown
@@ -50,7 +50,7 @@ body:
     attributes:
       label: Application version and app store
       description: You can find the version information at the bottom of the Settings screen.
-      placeholder: e.g. Element X version 0.3.0
+      placeholder: e.g. Seventwos Workspace version 0.3.0
     validations:
       required: false
   - type: input

@@ -156,7 +156,7 @@ You can then build the Rust SDK by running the script
 This will prompt you for the path to the Rust SDK, then build it and
 `matrix-rust-components-kotlin`, eventually producing an aar file at
 `./libraries/rustsdk/matrix-rust-sdk.aar`, which will be picked up
-automatically by the Element X Android build.
+automatically by the Seventwos Workspace for Android build.
 
 Troubleshooting:
  - You may need to set `ANDROID_NDK_HOME` e.g `export ANDROID_NDK_HOME=~/Library/Android/sdk/ndk`.
@@ -351,7 +351,7 @@ We are using [Gradle version catalog](https://docs.gradle.org/current/userguide/
 All the dependencies (including android artifact, gradle plugin, etc.) should be declared in [../gradle/libs.versions.toml](libs.versions.toml) file.
 Some dependency, mainly because they are not shared can be declared in `build.gradle.kts` files.
 
-[Renovate](https://github.com/apps/renovate) is set up on the project. This tool will automatically create Pull Request to upgrade our dependencies one by one. A [dependency dashboard issue](https://github.com/element-hq/element-x-android/issues/150) is maintained by the tool and allow to perform some actions.
+[Renovate](https://github.com/apps/renovate) is set up on the project. This tool will automatically create Pull Request to upgrade our dependencies one by one. A dependency dashboard issue is maintained by the tool and allows repository maintainers to perform actions.
 
 ### Test
 
