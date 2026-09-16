@@ -32,8 +32,10 @@ jobs:
             const FROZEN_CLASSES = [
             ];
 
-            // Only this user is allowed to edit the translation files, since they come from Localazy.
-            const TRANSLATION_ALLOW_LIST = ["ElementBot"];
+            // Translation changes need the repository's existing PR-i18n label so reviewers can
+            // identify them; unlabelled changes stay visible as a warning instead of failing all
+            // legitimate localization contributions.
+            const TRANSLATION_LABEL = "PR-i18n";
 
             const pr = context.payload.pull_request;
             const body = pr.body ?? "";
@@ -76,8 +78,8 @@ jobs:
               warnings.push("You seem to have made changes to some images. Please consider using a vector drawable.");
             }
 
-            if (!TRANSLATION_ALLOW_LIST.includes(pr.user.login) && paths.some(path => path.endsWith("translations.xml"))) {
-              failures.push("Translation files are managed through the repository's localisation workflow and must not be edited manually.");
+            if (paths.some(path => path.endsWith("translations.xml")) && !pr.labels.some(label => label.name === TRANSLATION_LABEL)) {
+              warnings.push(`Translation files changed without the \`${TRANSLATION_LABEL}\` label. Please add it so the localization changes receive manual review.`);
             }
 
             warnings.forEach(warning => core.warning(warning));
