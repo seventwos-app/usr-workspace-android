@@ -88,8 +88,8 @@ Ha folytatja, egyes beállítások megváltozhatnak."</string>
   <string name="screen_notification_settings_sound_custom_fallback">"Egyedi"</string>
   <string name="screen_notification_settings_sound_custom_sound_button_title">"Egyedi hang…"</string>
   <string name="screen_notification_settings_sound_delete_sound_error_title">"Hiba a fájl törlésekor"</string>
-  <string name="screen_notification_settings_sound_element_default">"Element alapértelmezett"</string>
-  <string name="screen_notification_settings_sound_element_fade">"Element Fade"</string>
+  <string name="screen_notification_settings_sound_element_default">"Seventwos alapértelmezett"</string>
+  <string name="screen_notification_settings_sound_element_fade">"Seventwos Fade"</string>
   <string name="screen_notification_settings_sound_import_sound_error_title">"Hiba a fájl importálásakor"</string>
   <string name="screen_notification_settings_sound_preview_sound_error_title">"Probléma a riasztási hang előnézetekor"</string>
   <string name="screen_notification_settings_sound_section_title">"Hang"</string>

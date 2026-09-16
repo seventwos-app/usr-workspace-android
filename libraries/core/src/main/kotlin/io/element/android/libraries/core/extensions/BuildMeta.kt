@@ -11,10 +11,18 @@ package io.element.android.libraries.core.extensions
 import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.core.meta.BuildType
 
-fun BuildMeta.isElement(): Boolean {
+/**
+ * Returns `true` if this build is the Seventwos-owned production build of this application,
+ * identified by its application id, for the given [BuildMeta.buildType].
+ *
+ * This capability check replaces a previous brand-specific `isElement()` gate; it is safe to
+ * use for any application id configured through `BuildTimeConfig`, and is not tied to a
+ * particular upstream brand.
+ */
+fun BuildMeta.isSeventwosWorkspace(): Boolean {
     return when (buildType) {
-        BuildType.RELEASE -> applicationId == "io.element.android.x"
-        BuildType.NIGHTLY -> applicationId == "io.element.android.x.nightly"
-        BuildType.DEBUG -> applicationId == "io.element.android.x.debug"
+        BuildType.RELEASE -> applicationId == "org.seventwos.workspace"
+        BuildType.NIGHTLY -> applicationId == "org.seventwos.workspace.nightly"
+        BuildType.DEBUG -> applicationId == "org.seventwos.workspace.debug"
     }
 }

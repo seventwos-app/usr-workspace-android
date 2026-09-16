@@ -13,7 +13,7 @@ import io.gitlab.arturbosch.detekt.api.RuleSet
 import io.gitlab.arturbosch.detekt.api.RuleSetProvider
 
 class ElementRuleSetProvider : RuleSetProvider {
-    override val ruleSetId: String = "ElementXRules"
+    override val ruleSetId: String = "SeventwosRules"
 
     override fun instance(config: Config): RuleSet = RuleSet(
         id = ruleSetId,

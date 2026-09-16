@@ -126,20 +126,20 @@ dependencyAnalysis {
 
 // To run a sonar analysis:
 // Run './gradlew sonar -Dsonar.login=<SONAR_LOGIN>'
-// The SONAR_LOGIN is stored in passbolt as Token Sonar Cloud Bma
-// Sonar result can be found here: https://sonarcloud.io/project/overview?id=element-x-android
+// Configure SONAR_LOGIN with a token for the Seventwos-owned SonarCloud organization/project below.
+// Sonar result can be found here: https://sonarcloud.io/project/overview?id=usr-workspace-android
 sonar {
     properties {
-        property("sonar.projectName", "element-x-android")
-        property("sonar.projectKey", "element-x-android")
+        property("sonar.projectName", "usr-workspace-android")
+        property("sonar.projectKey", "usr-workspace-android")
         property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.projectVersion", "1.0") // TODO project(":app").android.defaultConfig.versionName)
         property("sonar.sourceEncoding", "UTF-8")
-        property("sonar.links.homepage", "https://github.com/element-hq/element-x-android/")
-        property("sonar.links.ci", "https://github.com/element-hq/element-x-android/actions")
-        property("sonar.links.scm", "https://github.com/element-hq/element-x-android/")
-        property("sonar.links.issue", "https://github.com/element-hq/element-x-android/issues")
-        property("sonar.organization", "element-hq")
+        property("sonar.links.homepage", "https://github.com/seventwos-app/usr-workspace-android/")
+        property("sonar.links.ci", "https://github.com/seventwos-app/usr-workspace-android/actions")
+        property("sonar.links.scm", "https://github.com/seventwos-app/usr-workspace-android/")
+        property("sonar.links.issue", "https://github.com/seventwos-app/usr-workspace-android/issues")
+        property("sonar.organization", "seventwos-app")
         property("sonar.login", if (project.hasProperty("SONAR_LOGIN")) project.property("SONAR_LOGIN")!! else "invalid")
 
         // exclude source code from analyses separated by a colon (:)

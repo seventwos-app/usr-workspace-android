@@ -63,7 +63,7 @@ fun aSecureBackupRootState(
     backupState = backupState,
     doesBackupExistOnServer = doesBackupExistOnServer,
     recoveryState = recoveryState,
-    appName = "Element",
+    appName = "Seventwos Workspace",
     displayKeyStorageDisabledError = displayKeyStorageDisabledError,
     snackbarMessage = snackbarMessage,
     eventSink = {},

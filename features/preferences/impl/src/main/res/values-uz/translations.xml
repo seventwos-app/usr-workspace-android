@@ -88,8 +88,8 @@ Davom ettirsangiz, baʼzi sozlamalaringiz oʻzgarishi mumkin."</string>
   <string name="screen_notification_settings_sound_custom_fallback">"Maxsus"</string>
   <string name="screen_notification_settings_sound_custom_sound_button_title">"Maxsus ovoz…"</string>
   <string name="screen_notification_settings_sound_delete_sound_error_title">"Faylni oʻchirishda xatolik yuz berdi"</string>
-  <string name="screen_notification_settings_sound_element_default">"Element standarti"</string>
-  <string name="screen_notification_settings_sound_element_fade">"Elementlarning yoʻqolishi"</string>
+  <string name="screen_notification_settings_sound_element_default">"Seventwos standarti"</string>
+  <string name="screen_notification_settings_sound_element_fade">"Seventwoslarning yoʻqolishi"</string>
   <string name="screen_notification_settings_sound_import_sound_error_title">"Faylni import qilishda xatolik yuz berdi"</string>
   <string name="screen_notification_settings_sound_preview_sound_error_title">"Ogohlantirish ovozini oldindan koʻrishda muammo"</string>
   <string name="screen_notification_settings_sound_section_title">"Ovoz"</string>

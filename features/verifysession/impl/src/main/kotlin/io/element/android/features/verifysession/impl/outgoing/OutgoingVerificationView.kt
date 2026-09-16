@@ -57,7 +57,7 @@ import io.element.android.libraries.ui.strings.CommonStrings
 @Composable
 fun OutgoingVerificationView(
     state: OutgoingVerificationState,
-    onLearnMoreClick: () -> Unit,
+    onLearnMoreClick: (() -> Unit)?,
     onFinish: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -209,12 +209,14 @@ private fun OutgoingVerificationHeader(step: Step, request: VerificationRequest.
 private fun OutgoingVerificationContent(
     step: Step,
     request: VerificationRequest.Outgoing,
-    onLearnMoreClick: () -> Unit,
+    onLearnMoreClick: (() -> Unit)?,
 ) {
     when (step) {
         is Step.Initial -> when (request) {
             is VerificationRequest.Outgoing.CurrentSession -> Unit
-            is VerificationRequest.Outgoing.User -> ContentInitial(onLearnMoreClick)
+            is VerificationRequest.Outgoing.User -> if (onLearnMoreClick != null) {
+                ContentInitial(onLearnMoreClick)
+            }
         }
         is Step.Verifying -> VerificationContentVerifying(step.data)
         else -> Unit
@@ -333,7 +335,7 @@ internal fun OutgoingVerificationViewPreview(@PreviewParameter(
 ) state: OutgoingVerificationState) = ElementPreview {
     OutgoingVerificationView(
         state = state,
-        onLearnMoreClick = {},
+        onLearnMoreClick = null,
         onFinish = {},
         onBack = {},
     )

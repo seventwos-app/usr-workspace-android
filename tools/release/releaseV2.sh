@@ -8,6 +8,10 @@
 # do not exit when any command fails, failures are handled explicitly by the script
 set +e
 
+gitHubRepo="seventwos-app/usr-workspace-android"
+applicationId="org.seventwos.workspace"
+productName="Seventwos Workspace for Android"
+
 printf "\n================================================================================\n"
 printf "|                  Welcome to the release script (V2)!                         |\n"
 printf "================================================================================\n"
@@ -29,35 +33,21 @@ then
     envError=1
 fi
 
-# Path of the key store (it's a file)
-keyStorePath="${ELEMENT_X_KEYSTORE_PATH}"
-if [[ -z "${keyStorePath}" ]]; then
-    printf "Fatal: ELEMENT_X_KEYSTORE_PATH is not defined in the environment.\n"
-    envError=1
-fi
-# Keystore password
-keyStorePassword="${ELEMENT_X_KEYSTORE_PASSWORD}"
-if [[ -z "${keyStorePassword}" ]]; then
-    printf "Fatal: ELEMENT_X_KEYSTORE_PASSWORD is not defined in the environment.\n"
-    envError=1
-fi
-# Key password
-keyPassword="${ELEMENT_X_KEY_PASSWORD}"
-if [[ -z "${keyPassword}" ]]; then
-    printf "Fatal: ELEMENT_X_KEY_PASSWORD is not defined in the environment.\n"
-    envError=1
-fi
 # Android home
 androidHome="${ANDROID_HOME}"
 if [[ -z "${androidHome}" ]]; then
     printf "Fatal: ANDROID_HOME is not defined in the environment.\n"
     envError=1
 fi
-# @elementbot:matrix.org matrix token / Not mandatory
-elementBotToken="${ELEMENT_BOT_MATRIX_TOKEN}"
-if [[ -z "${elementBotToken}" ]]; then
-    printf "Warning: ELEMENT_BOT_MATRIX_TOKEN is not defined in the environment.\n"
+# Matrix token used to announce the release / Not mandatory
+releaseBotToken="${SEVENTWOS_RELEASE_MATRIX_TOKEN}"
+if [[ -z "${releaseBotToken}" ]]; then
+    printf "Warning: SEVENTWOS_RELEASE_MATRIX_TOKEN is not defined in the environment.\n"
 fi
+# Matrix room to announce the release to / Only used when the token above is defined
+releaseRoomId="${SEVENTWOS_RELEASE_MATRIX_ROOM_ID}"
+# Matrix homeserver used to send the announcement / Only used when the token above is defined
+releaseHomeserver="${SEVENTWOS_RELEASE_MATRIX_HOMESERVER}"
 
 if [ ${envError} == 1 ]; then
   exit 1
@@ -95,7 +85,7 @@ if [[ ! -d ${buildToolsPath} ]]; then
 fi
 
 # Check that there is no unmerged PR with the label "Z-NextRelease", else exit
-unmergedPrs=$(gh pr list --repo element-hq/element-x-android --label "Z-NextRelease" --state open --json title,url -q '.[] | "\(.url): \(.title)"')
+unmergedPrs=$(gh pr list --repo "${gitHubRepo}" --label "Z-NextRelease" --state open --json title,url -q '.[] | "\(.url): \(.title)"')
 if [[ ${unmergedPrs} != "" ]]; then
     printf "Fatal: There are unmerged PRs with the label Z-NextRelease:\n%s" "${unmergedPrs}"
     printf "\n"
@@ -185,7 +175,7 @@ printf "\n======================================================================
 printf "Creating fastlane file...\n"
 fastlaneFile="${versionCode}.txt"
 fastlanePathFile="./fastlane/metadata/android/en-US/changelogs/${fastlaneFile}"
-printf "Main changes in this version: bug fixes and improvements.\nFull changelog: https://github.com/element-hq/element-x-android/releases" > "${fastlanePathFile}"
+printf "Main changes in this version: bug fixes and improvements.\nFull changelog: https://github.com/%s/releases" "${gitHubRepo}" > "${fastlanePathFile}"
 
 read -r -p "I have created the file ${fastlanePathFile}, please edit it and press enter to continue. "
 git add "${fastlanePathFile}"
@@ -206,13 +196,14 @@ git merge --no-ff --no-edit -m "Merge tag 'v${version}' into develop" "v${versio
 git branch -d "release/${version}" || fail "unable to delete the branch release/${version}."
 
 printf "\n================================================================================\n"
-read -r -p "Done, push the branch 'main' and the new tag (yes/no) default to yes? " doPush
+read -r -p "Done, push the branch 'main', the new tag and the branch 'develop' (yes/no) default to yes? " doPush
 doPush=${doPush:-yes}
 
 if [ "${doPush}" == "yes" ]; then
-  printf "Pushing branch 'main' and tag 'v%s'...\n" "${version}"
+  printf "Pushing branch 'main', tag 'v%s' and branch 'develop'...\n" "${version}"
   git push origin main
   git push origin "v${version}"
+  git push origin develop
 else
     printf "Not pushing, do not forget to push manually!\n"
 fi
@@ -222,26 +213,34 @@ printf "Checking out develop...\n"
 git checkout develop
 
 printf "\n================================================================================\n"
-printf "Downloading the artifacts...\n"
+printf "Building the release artifacts...\n"
 
-targetPath="./tmp/Element/${version}"
-fdroidTargetPath="${targetPath}/fdroid"
-gplayTargetPath="${targetPath}/gplay"
+targetPath="./tmp/seventwos-workspace/${version}"
+artifactPath="${targetPath}/artifact"
+# Paths inside the artifact, relative to the `app/build/outputs` folder uploaded by the workflow.
+fdroidTargetPath="${artifactPath}/apk/fdroid/release"
+gplayTargetPath="${artifactPath}/bundle/gplayRelease"
 
-releaseCommit=$(git rev-parse --verify --quiet "v${version}^{commit}")
+# The workflow release.yml is manually dispatched and only runs on the branch develop, so the run is
+# identified by the head commit of develop, not by the release tag.
+releaseCommit=$(git rev-parse --verify --quiet "develop^{commit}")
 if [[ -z "${releaseCommit}" ]]; then
   # Without a commit, `gh run list` would return the latest run of the workflow, which may be another one.
-  printf "Fatal: the tag v%s cannot be resolved.\n" "${version}"
+  printf "Fatal: the branch develop cannot be resolved.\n"
   exit 1
 fi
+
+printf "Dispatching the workflow release.yml on the branch develop (commit %s)...\n" "${releaseCommit}"
+gh workflow run release.yml --repo "${gitHubRepo}" --ref develop \
+  || fail "unable to dispatch the workflow release.yml. Note that the run must be approved in the 'android-release' environment."
 
 printf "Looking for the run of the workflow release.yml for the commit %s...\n" "${releaseCommit}"
 
 runId=""
 
-# The run can take a few seconds to appear after the push, so retry for a couple of minutes.
+# The run can take a few seconds to appear after the dispatch, so retry for a couple of minutes.
 for _ in $(seq 1 12); do
-  runId=$(gh run list --repo element-hq/element-x-android --workflow release.yml --commit "${releaseCommit}" --limit 1 --json databaseId -q '.[0].databaseId' 2> /dev/null)
+  runId=$(gh run list --repo "${gitHubRepo}" --workflow release.yml --commit "${releaseCommit}" --limit 1 --json databaseId -q '.[0].databaseId' 2> /dev/null)
   if [[ -n "${runId}" ]]; then
     break
   fi
@@ -254,84 +253,33 @@ if [[ -z "${runId}" ]]; then
   exit 1
 fi
 
-printf "Found the run https://github.com/element-hq/element-x-android/actions/runs/%s\n" "${runId}"
-printf "Waiting for the run to complete...\n"
-gh run watch "${runId}" --repo element-hq/element-x-android --compact --exit-status
+printf "Found the run https://github.com/%s/actions/runs/%s\n" "${gitHubRepo}" "${runId}"
+printf "Waiting for the run to complete. It may be waiting for a review of the 'android-release' environment...\n"
+gh run watch "${runId}" --repo "${gitHubRepo}" --compact --exit-status
+
+printf "\n================================================================================\n"
+printf "Downloading the artifacts...\n"
+
+# The workflow uploads a single artifact containing both the Gplay app bundle and the F-Droid APKs,
+# already signed with the release key.
+artifactName="seventwos-workspace-android-${releaseCommit}"
 
 ret=1
 
 while [[ $ret -ne 0 ]]; do
-  gh run download "${runId}" --repo element-hq/element-x-android \
-     --dir "${gplayTargetPath}" \
-     --name elementx-app-gplay-bundle-unsigned
+  gh run download "${runId}" --repo "${gitHubRepo}" \
+     --dir "${artifactPath}" \
+     --name "${artifactName}"
 
   ret=$?
-  if [[ $ret -eq 0 ]]; then
-    gh run download "${runId}" --repo element-hq/element-x-android \
-       --dir "${fdroidTargetPath}" \
-       --name elementx-app-fdroid-apks-unsigned
-
-    ret=$?
-  fi
   if [[ $ret -ne 0 ]]; then
-    read -r -p "Error while downloading the artifacts. You may want to fix the issue and retry. Retry (yes/no) default to yes? " doRetry
+    read -r -p "Error while downloading the artifact ${artifactName}. You may want to fix the issue and retry. Retry (yes/no) default to yes? " doRetry
     doRetry=${doRetry:-yes}
     if [ "${doRetry}" == "no" ]; then
       exit 1
     fi
   fi
 done
-
-printf "\n================================================================================\n"
-printf "Signing the FDroid APKs...\n"
-
-cp "${fdroidTargetPath}"/app-fdroid-arm64-v8a-release.apk \
-   "${fdroidTargetPath}"/app-fdroid-arm64-v8a-release-signed.apk
-"${buildToolsPath}"/apksigner sign \
-       -v \
-       --alignment-preserved true \
-       --ks "${keyStorePath}" \
-       --ks-pass pass:"${keyStorePassword}" \
-       --ks-key-alias elementx \
-       --key-pass pass:"${keyPassword}" \
-       --min-sdk-version "${minSdkVersion}" \
-       "${fdroidTargetPath}"/app-fdroid-arm64-v8a-release-signed.apk
-
-cp "${fdroidTargetPath}"/app-fdroid-armeabi-v7a-release.apk \
-   "${fdroidTargetPath}"/app-fdroid-armeabi-v7a-release-signed.apk
-"${buildToolsPath}"/apksigner sign \
-       -v \
-       --alignment-preserved true \
-       --ks "${keyStorePath}" \
-       --ks-pass pass:"${keyStorePassword}" \
-       --ks-key-alias elementx \
-       --key-pass pass:"${keyPassword}" \
-       --min-sdk-version "${minSdkVersion}" \
-       "${fdroidTargetPath}"/app-fdroid-armeabi-v7a-release-signed.apk
-
-cp "${fdroidTargetPath}"/app-fdroid-x86-release.apk \
-   "${fdroidTargetPath}"/app-fdroid-x86-release-signed.apk
-"${buildToolsPath}"/apksigner sign \
-       -v \
-       --alignment-preserved true \
-       --ks "${keyStorePath}" \
-       --ks-pass pass:"${keyStorePassword}" \
-       --ks-key-alias elementx \
-       --key-pass pass:"${keyPassword}" \
-       --min-sdk-version "${minSdkVersion}" \
-       "${fdroidTargetPath}"/app-fdroid-x86-release-signed.apk
-
-cp "${fdroidTargetPath}"/app-fdroid-x86_64-release.apk \
-   "${fdroidTargetPath}"/app-fdroid-x86_64-release-signed.apk
-"${buildToolsPath}"/apksigner sign \
-       -v \
-       --alignment-preserved true \
-       --ks "${keyStorePath}" \
-       --ks-pass pass:"${keyStorePassword}" \
-       --ks-key-alias elementx \
-       --key-pass pass:"${keyPassword}" \
-       --min-sdk-version "${minSdkVersion}" \
-       "${fdroidTargetPath}"/app-fdroid-x86_64-release-signed.apk
 
 printf "\n================================================================================\n"
 printf "Checking the signed APKs...\n"
@@ -346,11 +294,16 @@ for abiEntry in ${fdroidAbis}; do
   abi="${abiEntry%%:*}"
   abiCode="${abiEntry##*:}"
   expectedApkVersionCode=$((versionCode + abiCode))
-  apkFile="${fdroidTargetPath}/app-fdroid-${abi}-release-signed.apk"
+  apkFile="${fdroidTargetPath}/app-fdroid-${abi}-release.apk"
   apkBadging=$("${buildToolsPath}"/aapt dump badging "${apkFile}" | grep -m 1 "^package")
   apkVersionCode=$(printf "%s" "${apkBadging}" | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p")
   apkVersionName=$(printf "%s" "${apkBadging}" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")
-  printf "File app-fdroid-%s-release-signed.apk: version code %s, version name %s\n" "${abi}" "${apkVersionCode}" "${apkVersionName}"
+  apkPackageName=$(printf "%s" "${apkBadging}" | sed -n "s/.*name='\([^']*\)'.*/\1/p")
+  printf "File app-fdroid-%s-release.apk: package %s, version code %s, version name %s\n" "${abi}" "${apkPackageName}" "${apkVersionCode}" "${apkVersionName}"
+  if [[ "${apkPackageName}" != "${applicationId}" ]]; then
+    printf "Warning: was expecting the package %s, but got %s.\n" "${applicationId}" "${apkPackageName}"
+    checkError=1
+  fi
   if [[ "${apkVersionCode}" != "${expectedApkVersionCode}" ]]; then
     printf "Warning: was expecting the version code %s, but got %s.\n" "${expectedApkVersionCode}" "${apkVersionCode}"
     checkError=1
@@ -359,36 +312,36 @@ for abiEntry in ${fdroidAbis}; do
     printf "Warning: was expecting the version name %s, but got %s.\n" "${version}" "${apkVersionName}"
     checkError=1
   fi
+  apkCerts=$("${buildToolsPath}"/apksigner verify --min-sdk-version "${minSdkVersion}" --verbose --print-certs "${apkFile}")
+  if [[ $? -ne 0 ]]; then
+    printf "Warning: the signature of %s could not be verified.\n" "${apkFile}"
+    checkError=1
+  fi
+  if printf "%s" "${apkCerts}" | grep -qi "Android Debug"; then
+    printf "Warning: %s is signed with the Android debug certificate.\n" "${apkFile}"
+    checkError=1
+  fi
 done
 
 checkVersionResult
 
 printf "\n================================================================================\n"
-printf "The APKs in %s have been signed!\n" "${fdroidTargetPath}"
+printf "The APKs in %s are signed and verified!\n" "${fdroidTargetPath}"
 
-unsignedBundlePath="${gplayTargetPath}/app-gplay-release.aab"
-signedBundlePath="${gplayTargetPath}/app-gplay-release-signed.aab"
+signedBundlePath="${gplayTargetPath}/app-gplay-release.aab"
 # The universal APK is downloaded manually from the GooglePlay console, and is named after the version code.
 universalApkPath="${gplayTargetPath}/${versionCode}.apk"
-
-printf "\n================================================================================\n"
-printf "Signing file %s with build-tools version %s for min SDK version %s...\n" "${unsignedBundlePath}" "${buildToolsVersion}" "${minSdkVersion}"
-
-cp "${unsignedBundlePath}" "${signedBundlePath}"
-
-"${buildToolsPath}"/apksigner sign \
-    -v \
-    --ks "${keyStorePath}" \
-    --ks-pass pass:"${keyStorePassword}" \
-    --ks-key-alias elementx \
-    --key-pass pass:"${keyPassword}" \
-    --min-sdk-version "${minSdkVersion}" \
-    "${signedBundlePath}"
 
 printf "\n================================================================================\n"
 printf "Checking the signed app bundle...\n"
 
 checkError=0
+
+jarsigner -verify "${signedBundlePath}"
+if [[ $? -ne 0 ]]; then
+  printf "Warning: the signature of %s could not be verified.\n" "${signedBundlePath}"
+  checkError=1
+fi
 
 bundleVersionCode=$(bundletool dump manifest --bundle="${signedBundlePath}" --xpath=/manifest/@android:versionCode)
 bundleVersionName=$(bundletool dump manifest --bundle="${signedBundlePath}" --xpath=/manifest/@android:versionName)
@@ -405,7 +358,7 @@ fi
 checkVersionResult
 
 printf "\n================================================================================\n"
-printf "The file %s has been signed and can be uploaded to the PlayStore!\n" "${signedBundlePath}"
+printf "The file %s is signed and can be uploaded to the PlayStore!\n" "${signedBundlePath}"
 
 printf "\n================================================================================\n"
 read -r -p "Do you want to build the APKs from the app bundle? You need to do this step if you want to install the application to your device. (yes/no) default to no " doBuildApks
@@ -413,7 +366,7 @@ doBuildApks=${doBuildApks:-no}
 
 if [ "${doBuildApks}" == "yes" ]; then
   printf "Building apks...\n"
-  bundletool build-apks --bundle="${signedBundlePath}" --output="${gplayTargetPath}"/elementx.apks \
+  bundletool build-apks --bundle="${signedBundlePath}" --output="${gplayTargetPath}"/seventwos-workspace.apks \
       --ks=./app/signature/debug.keystore --ks-pass=pass:android --ks-key-alias=androiddebugkey --key-pass=pass:android \
       --overwrite
 
@@ -421,7 +374,7 @@ if [ "${doBuildApks}" == "yes" ]; then
   doDeploy=${doDeploy:-yes}
   if [ "${doDeploy}" == "yes" ]; then
     printf "Installing apk for your device...\n"
-    bundletool install-apks --apks="${gplayTargetPath}"/elementx.apks
+    bundletool install-apks --apks="${gplayTargetPath}"/seventwos-workspace.apks
     read -r -p "Please run the application on your phone to check that the upgrade went well. Press enter to continue. "
   else
     printf "APK will not be deployed!\n"
@@ -449,10 +402,10 @@ printf "Creating the release on GitHub.\n"
 releaseAssets=(
   "${signedBundlePath}"
   "${universalApkPath}"
-  "${fdroidTargetPath}/app-fdroid-arm64-v8a-release-signed.apk"
-  "${fdroidTargetPath}/app-fdroid-armeabi-v7a-release-signed.apk"
-  "${fdroidTargetPath}/app-fdroid-x86-release-signed.apk"
-  "${fdroidTargetPath}/app-fdroid-x86_64-release-signed.apk"
+  "${fdroidTargetPath}/app-fdroid-arm64-v8a-release.apk"
+  "${fdroidTargetPath}/app-fdroid-armeabi-v7a-release.apk"
+  "${fdroidTargetPath}/app-fdroid-x86-release.apk"
+  "${fdroidTargetPath}/app-fdroid-x86_64-release.apk"
 )
 
 # Set this variable to something other than 0 to enter the loop, and reset it to 0 when all files are found.
@@ -474,8 +427,8 @@ done
 
 printf "Creating the pre-release v%s and uploading the %d files, this can take a while...\n" "${version}" "${#releaseAssets[@]}"
 gh release create "v${version}" \
-   --repo element-hq/element-x-android \
-   --title "Element X Android v${version}" \
+   --repo "${gitHubRepo}" \
+   --title "${productName} v${version}" \
    --generate-notes \
    --prerelease \
    --verify-tag \
@@ -486,7 +439,7 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-printf "The pre-release has been created: https://github.com/element-hq/element-x-android/releases/tag/v%s\n" "${version}"
+printf "The pre-release has been created: https://github.com/%s/releases/tag/v%s\n" "${gitHubRepo}" "${version}"
 printf "Please check the generated release notes, and optionally reorder items and fix typos.\n"
 read -r -p "Press enter to continue. "
 
@@ -494,7 +447,7 @@ printf "\n======================================================================
 printf "Update the project release notes:\n\n"
 
 printf "Getting the release notes from GitHub...\n"
-releaseNotes=$(gh release view "v${version}" --repo element-hq/element-x-android --json body -q .body)
+releaseNotes=$(gh release view "v${version}" --repo "${gitHubRepo}" --json body -q .body)
 
 if [[ $? -ne 0 || -z "${releaseNotes}" ]]; then
   printf "Fatal: error while getting the release notes from GitHub.\n"
@@ -503,7 +456,7 @@ fi
 
 # GitHub returns the release notes with CRLF line endings, remove the CR.
 releaseNotes="${releaseNotes//$'\r'/}"
-changesTitle="Changes in Element X v${version}"
+changesTitle="Changes in ${productName} v${version}"
 # Underline the title with as many '=' as there are characters in the title.
 changesUnderline="${changesTitle//?/=}"
 changesFile="./CHANGES.md"
@@ -535,20 +488,18 @@ fi
 
 printf "\n================================================================================\n"
 printf "Message for the Android internal room:\n\n"
-message="@room Element X Android ${version} is ready to be tested. You can get it from https://github.com/element-hq/element-x-android/releases/tag/v${version}. You can install the universal APK. If you want to install the application from the app bundle, you can follow instructions [here](https://github.com/element-hq/element-x-android/blob/develop/docs/install_from_github_release.md). Please report any feedback. Thanks!"
+message="@room ${productName} ${version} is ready to be tested. You can get it from https://github.com/${gitHubRepo}/releases/tag/v${version}. You can install the universal APK. If you want to install the application from the app bundle, you can follow instructions [here](https://github.com/${gitHubRepo}/blob/develop/docs/install_from_github_release.md). Please report any feedback. Thanks!"
 printf "%s\n\n" "${message}"
 
-if [[ -z "${elementBotToken}" ]]; then
-  read -r -p "ELEMENT_BOT_MATRIX_TOKEN is not defined in the environment. Cannot send the message for you. Please send it manually, and press enter to continue. "
+if [[ -z "${releaseBotToken}" || -z "${releaseRoomId}" || -z "${releaseHomeserver}" ]]; then
+  read -r -p "SEVENTWOS_RELEASE_MATRIX_TOKEN, SEVENTWOS_RELEASE_MATRIX_ROOM_ID and SEVENTWOS_RELEASE_MATRIX_HOMESERVER are not all defined in the environment. Cannot send the message for you. Please send it manually, and press enter to continue. "
 else
   read -r -p "Send this message to the room (yes/no) default to yes? " doSend
   doSend=${doSend:-yes}
   if [ "${doSend}" == "yes" ]; then
     printf "Sending message...\n"
     transactionId=$(openssl rand -hex 16)
-    # Element Android internal
-    matrixRoomId="!LiSLXinTDCsepePiYW:matrix.org"
-    curl -X PUT --data "{\"msgtype\":\"m.text\",\"body\":\"${message}\"}" -H "Authorization: Bearer ${elementBotToken}" https://matrix-client.matrix.org/_matrix/client/r0/rooms/${matrixRoomId}/send/m.room.message/\$local."${transactionId}"
+    curl -X PUT --data "{\"msgtype\":\"m.text\",\"body\":\"${message}\"}" -H "Authorization: Bearer ${releaseBotToken}" "${releaseHomeserver}/_matrix/client/v3/rooms/${releaseRoomId}/send/m.room.message/\$local.${transactionId}"
   else
     printf "Message not sent, please send it manually!\n"
   fi

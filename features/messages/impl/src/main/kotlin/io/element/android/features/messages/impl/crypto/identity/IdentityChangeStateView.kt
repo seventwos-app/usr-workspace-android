@@ -92,26 +92,32 @@ private fun ViolationAlert(
                 start = userIdStartIndex,
                 end = userIdStartIndex + userIdStr.length,
             )
-            val learnMoreStartIndex = fullText.lastIndexOf(learnMoreStr)
-            addStyle(
-                style = SpanStyle(
-                    textDecoration = TextDecoration.Underline,
-                    fontWeight = FontWeight.Bold,
-                    color = ElementTheme.colors.textPrimary
-                ),
-                start = learnMoreStartIndex,
-                end = learnMoreStartIndex + learnMoreStr.length,
-            )
-            addLink(
-                url = LinkAnnotation.Url(
-                    url = LearnMoreConfig.IDENTITY_CHANGE_URL,
-                    linkInteractionListener = {
-                        onLinkClick(LearnMoreConfig.IDENTITY_CHANGE_URL, true)
-                    }
-                ),
-                start = learnMoreStartIndex,
-                end = learnMoreStartIndex + learnMoreStr.length,
-            )
+            // Only render the trailing "learn more" text as a link when a Seventwos-owned help
+            // page is configured; otherwise leave it as plain, non-interactive text (fail closed
+            // instead of linking out to an upstream Element help page).
+            val identityChangeUrl = LearnMoreConfig.IDENTITY_CHANGE_URL
+            if (identityChangeUrl != null) {
+                val learnMoreStartIndex = fullText.lastIndexOf(learnMoreStr)
+                addStyle(
+                    style = SpanStyle(
+                        textDecoration = TextDecoration.Underline,
+                        fontWeight = FontWeight.Bold,
+                        color = ElementTheme.colors.textPrimary
+                    ),
+                    start = learnMoreStartIndex,
+                    end = learnMoreStartIndex + learnMoreStr.length,
+                )
+                addLink(
+                    url = LinkAnnotation.Url(
+                        url = identityChangeUrl,
+                        linkInteractionListener = {
+                            onLinkClick(identityChangeUrl, true)
+                        }
+                    ),
+                    start = learnMoreStartIndex,
+                    end = learnMoreStartIndex + learnMoreStr.length,
+                )
+            }
         },
         submitText = stringResource(submitTextId),
         onSubmitClick = onSubmitClick,

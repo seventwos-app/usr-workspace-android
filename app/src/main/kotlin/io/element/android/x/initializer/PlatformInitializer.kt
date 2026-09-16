@@ -20,7 +20,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
-private const val ELEMENT_X_TARGET = "elementx"
+// Must be kept in sync with the tracing target declared in RustAnalyticsSdkSpan.
+private const val APP_TRACING_TARGET = "seventwos"
 
 class PlatformInitializer : Initializer<Unit> {
     override fun create(context: Context) {
@@ -28,7 +29,7 @@ class PlatformInitializer : Initializer<Unit> {
         val tracingService = appBindings.tracingService()
         val platformService = appBindings.platformService()
         val bugReporter = appBindings.bugReporter()
-        Timber.plant(tracingService.createTimberTree(ELEMENT_X_TARGET))
+        Timber.plant(tracingService.createTimberTree(APP_TRACING_TARGET))
         val preferencesStore = appBindings.preferencesStore()
         val featureFlagService = appBindings.featureFlagService()
         val logLevel = runBlocking { preferencesStore.getTracingLogLevelFlow().first() }
@@ -36,7 +37,7 @@ class PlatformInitializer : Initializer<Unit> {
             writesToLogcat = runBlocking { featureFlagService.isFeatureEnabled(FeatureFlags.PrintLogsToLogcat) },
             writesToFilesConfiguration = bugReporter.createWriteToFilesConfiguration(),
             logLevel = logLevel,
-            extraTargets = listOf(ELEMENT_X_TARGET),
+            extraTargets = listOf(APP_TRACING_TARGET),
             traceLogPacks = runBlocking { preferencesStore.getTracingLogPacksFlow().first() },
             sdkSentryDsn = appBindings.sentrySdkDsn()?.value?.takeIf { it.isNotBlank() },
         )

@@ -106,7 +106,7 @@ internal fun SpaceInfoRowPreview() = ElementPreview {
             rightText = numberOfRooms(10),
         )
         SpaceInfoRow(
-            leftText = "Element space",
+            leftText = "Seventwos space",
             rightText = numberOfRooms(16),
             iconVector = CompoundIcons.Space(),
         )

@@ -50,11 +50,11 @@ dependencyResolutionManagement {
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
-rootProject.name = "ElementX"
+rootProject.name = "SeventwosApp"
 include(":app")
 include(":appnav")
 include(":appconfig")
-include(":appicon:element")
+include(":appicon:default")
 include(":appicon:enterprise")
 include(":tests:detekt-rules")
 include(":tests:konsist")

@@ -160,7 +160,7 @@ class OutgoingVerificationViewTest : RobolectricTest() {
 
     private fun AndroidComposeUiTest<ComponentActivity>.setOutgoingVerificationView(
         state: OutgoingVerificationState,
-        onLearnMoreClick: () -> Unit = EnsureNeverCalled(),
+        onLearnMoreClick: (() -> Unit)? = EnsureNeverCalled(),
         onFinished: () -> Unit = EnsureNeverCalled(),
         onBack: () -> Unit = EnsureNeverCalled(),
     ) {

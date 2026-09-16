@@ -18,11 +18,11 @@ To setup, please refer at [https://maestro.mobile.dev](https://maestro.mobile.de
 
 From root dir of the project
 
-*Note: Since Element X does not allow account creation, we have to use an existing account to run maestro test suite. So to run locally, please replace `user` and `123` with your test matrix.org account credentials, and `my room` with one of a room this account has joined. Note that the test will send messages to this room.*
+*Note: Since Seventwos Workspace does not allow account creation, we have to use an existing account to run maestro test suite. So to run locally, please replace `user` and `123` with your test matrix.org account credentials, and `my room` with one of a room this account has joined. Note that the test will send messages to this room.*
 
 ```shell
 maestro test \
-    -e MAESTRO_APP_ID=io.element.android.x.debug \
+    -e MAESTRO_APP_ID=org.seventwos.workspace.debug \
     -e MAESTRO_USERNAME=user1 \
     -e MAESTRO_PASSWORD=123 \
     -e MAESTRO_RECOVERY_KEY=ABC \
@@ -40,7 +40,7 @@ Test result will be printed on the console, and screenshots will be generated at
 
 Tests are yaml files. Generally each yaml file should leave the app in the same screen than at the beginning.
 
-Start the Element X app and run this command to help writing test.
+Start the Seventwos Workspace app and run this command to help writing test.
 
 ```shell
 maestro studio
@@ -52,7 +52,7 @@ Also, if updating the application code, do not forget to deploy again the applic
 
 ## CI
 
-The CI can run Maestro using the workflow `.github/workflows/maestro.yaml` and [Maestro Cloud](https://cloud.mobile.dev/).
+The CI can run Maestro using the workflow `.github/workflows/maestro-local.yml` and [Maestro Cloud](https://cloud.mobile.dev/).
 Configure `MAESTRO_CLOUD_API_KEY` and `MATRIX_MAESTRO_ACCOUNT_PASSWORD` with Seventwos-owned test infrastructure before enabling cloud runs. Do not reuse inherited upstream accounts.
 
 ## iOS
@@ -70,5 +70,4 @@ So you have to change your input keyboard to QWERTY for it to work properly.
 
 ## Future
 
-- run on Element X iOS. This is already working but it need some change on the test to make it works. Could pass a PLATFORM parameter to have unique test and use conditional test.
-- run specific test on both iOS and Android devices to make them communicate together. Could be possible to test room invite and join, verification, call, etc. To be done when Element X will be able to create account and create room. A main script would be able to detect the Android device and the iOS device, and run several maestro tests sequentially, using `--device` parameter to perform a global test.
+- This repository's product scope is Android-only (see the root [README](../README.md#repository-scope)); cross-platform test coordination is out of scope until a companion client is part of this product's scope.

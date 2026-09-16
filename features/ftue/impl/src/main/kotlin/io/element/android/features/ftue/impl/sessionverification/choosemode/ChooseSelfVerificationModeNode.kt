@@ -33,6 +33,7 @@ class ChooseSelfVerificationModeNode(
         fun navigateToUseAnotherDevice()
         fun navigateToUseRecoveryKey()
         fun navigateToResetKey()
+        fun learnMoreUrl(): String?
         fun navigateToLearnMoreAboutEncryption()
     }
 
@@ -47,7 +48,7 @@ class ChooseSelfVerificationModeNode(
             onUseAnotherDevice = callback::navigateToUseAnotherDevice,
             onUseRecoveryKey = callback::navigateToUseRecoveryKey,
             onResetKey = callback::navigateToResetKey,
-            onLearnMore = callback::navigateToLearnMoreAboutEncryption,
+            onLearnMore = callback.learnMoreUrl()?.let { callback::navigateToLearnMoreAboutEncryption },
             modifier = modifier,
         )
 

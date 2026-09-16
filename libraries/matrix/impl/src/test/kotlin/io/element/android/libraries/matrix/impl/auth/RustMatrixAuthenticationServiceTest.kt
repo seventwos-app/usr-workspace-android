@@ -11,6 +11,7 @@ package io.element.android.libraries.matrix.impl.auth
 import com.google.common.truth.Truth.assertThat
 import io.element.android.features.enterprise.api.EnterpriseService
 import io.element.android.features.enterprise.test.FakeEnterpriseService
+import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.featureflag.test.FakeFeatureFlagService
 import io.element.android.libraries.matrix.api.paths.SessionPaths
 import io.element.android.libraries.matrix.impl.ClientBuilderProvider
@@ -94,6 +95,28 @@ class RustMatrixAuthenticationServiceTest {
     }
 
     @Test
+    fun `login registers the initial device name using the configured application name`() = runTest {
+        val capturedDeviceNames = mutableListOf<String?>()
+        val sut = createRustMatrixAuthenticationService(
+            buildMeta = aBuildMeta(applicationName = "Seventwos Workspace"),
+            clientBuilderProvider = FakeSequentialClientBuilderProvider(
+                {
+                    FakeFfiClient(
+                        homeserverLoginDetailsResult = { FakeFfiHomeserverLoginDetails() },
+                        loginResult = { _, _, initialDeviceName -> capturedDeviceNames.add(initialDeviceName) },
+                    )
+                },
+                { FakeFfiClient(withUtdHook = {}) },
+            ),
+        )
+
+        assertThat(sut.setHomeserver("matrix.org").isSuccess).isTrue()
+        assertThat(sut.login("alice", "password").getOrNull()).isEqualTo(A_USER_ID)
+
+        assertThat(capturedDeviceNames).containsExactly("Seventwos Workspace Android")
+    }
+
+    @Test
     fun `login closes the client used to log in before building the client of the session`() = runTest {
         val events = mutableListOf<String>()
         val sut = createRustMatrixAuthenticationService(
@@ -102,7 +125,7 @@ class RustMatrixAuthenticationServiceTest {
                     events.add("build login client")
                     FakeFfiClient(
                         homeserverLoginDetailsResult = { FakeFfiHomeserverLoginDetails() },
-                        loginResult = { _, _ -> },
+                        loginResult = { _, _, _ -> },
                         closeResult = { events.add("close login client") },
                     )
                 },
@@ -236,7 +259,7 @@ class RustMatrixAuthenticationServiceTest {
 
     private fun aLoginFakeFfiClient() = FakeFfiClient(
         homeserverLoginDetailsResult = { FakeFfiHomeserverLoginDetails() },
-        loginResult = { _, _ -> },
+        loginResult = { _, _, _ -> },
     )
 
     /**
@@ -255,6 +278,7 @@ class RustMatrixAuthenticationServiceTest {
     }
 
     private fun TestScope.createRustMatrixAuthenticationService(
+        buildMeta: BuildMeta = aBuildMeta(),
         sessionStore: SessionStore = InMemorySessionStore(updateUserProfileResult = { _, _, _ -> }),
         clientBuilderProvider: ClientBuilderProvider = FakeClientBuilderProvider(),
         enterpriseService: EnterpriseService = FakeEnterpriseService(),
@@ -269,6 +293,7 @@ class RustMatrixAuthenticationServiceTest {
             sqliteStoreBuilderProvider = sqliteStoreBuilderProvider,
         )
         return RustMatrixAuthenticationService(
+            buildMeta = buildMeta,
             sessionPathsFactory = sessionPathsFactory,
             coroutineDispatchers = testCoroutineDispatchers(),
             sessionStore = sessionStore,

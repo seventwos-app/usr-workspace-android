@@ -91,8 +91,8 @@
   <string name="screen_notification_settings_sound_custom_fallback">"自定义"</string>
   <string name="screen_notification_settings_sound_custom_sound_button_title">"自定义提示音…"</string>
   <string name="screen_notification_settings_sound_delete_sound_error_title">"删除文件时出错"</string>
-  <string name="screen_notification_settings_sound_element_default">"Element 默认"</string>
-  <string name="screen_notification_settings_sound_element_fade">"Element 淡入"</string>
+  <string name="screen_notification_settings_sound_element_default">"Seventwos 默认"</string>
+  <string name="screen_notification_settings_sound_element_fade">"Seventwos 淡入"</string>
   <string name="screen_notification_settings_sound_import_sound_error_title">"导入文件时出错"</string>
   <string name="screen_notification_settings_sound_preview_sound_error_title">"预览提示音时出现问题"</string>
   <string name="screen_notification_settings_sound_section_title">"提示音"</string>

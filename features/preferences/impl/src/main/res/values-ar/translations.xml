@@ -92,8 +92,8 @@
   <string name="screen_notification_settings_sound_custom_fallback">"مخصص"</string>
   <string name="screen_notification_settings_sound_custom_sound_button_title">"صوت مخصص…"</string>
   <string name="screen_notification_settings_sound_delete_sound_error_title">"خطأ في حذف الملف"</string>
-  <string name="screen_notification_settings_sound_element_default">"افتراضي Element"</string>
-  <string name="screen_notification_settings_sound_element_fade">"Element Fade"</string>
+  <string name="screen_notification_settings_sound_element_default">"افتراضي Seventwos"</string>
+  <string name="screen_notification_settings_sound_element_fade">"Seventwos Fade"</string>
   <string name="screen_notification_settings_sound_import_sound_error_title">"خطأ في استيراد الملف"</string>
   <string name="screen_notification_settings_sound_preview_sound_error_title">"مشكلة في معاينة صوت التنبيه"</string>
   <string name="screen_notification_settings_sound_section_title">"الصوت"</string>

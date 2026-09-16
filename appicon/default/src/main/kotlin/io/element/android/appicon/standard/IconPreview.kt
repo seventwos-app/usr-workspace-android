@@ -6,7 +6,7 @@
  * Please see LICENSE files in the repository root for full details.
  */
 
-package io.element.android.appicon.element
+package io.element.android.appicon.standard
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

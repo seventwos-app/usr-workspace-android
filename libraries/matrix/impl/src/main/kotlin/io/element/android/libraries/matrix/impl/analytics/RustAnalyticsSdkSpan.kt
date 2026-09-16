@@ -14,13 +14,16 @@ import org.matrix.rustcomponents.sdk.LogLevel
 import org.matrix.rustcomponents.sdk.Span
 import timber.log.Timber
 
+// Must be kept in sync with the tracing target declared in PlatformInitializer.
+private const val APP_TRACING_TARGET = "seventwos"
+
 class RustAnalyticsSdkSpan(
     name: String? = null,
     private val parentTraceId: String?,
 ) : AnalyticsSdkSpan {
     private val inner = if (name != null) {
         Span(
-            target = "elementx",
+            target = APP_TRACING_TARGET,
             name = name,
             file = "-",
             line = null,
@@ -29,7 +32,7 @@ class RustAnalyticsSdkSpan(
         )
     } else {
         Span.newBridgeSpan(
-            target = "elementx",
+            target = APP_TRACING_TARGET,
             parentTraceId = parentTraceId,
         )
     }

@@ -93,8 +93,8 @@
   <string name="screen_notification_settings_sound_custom_fallback">"Пользовательский"</string>
   <string name="screen_notification_settings_sound_custom_sound_button_title">"Пользовательский звук…"</string>
   <string name="screen_notification_settings_sound_delete_sound_error_title">"Ошибка при удалении файла"</string>
-  <string name="screen_notification_settings_sound_element_default">"Element по умолчанию"</string>
-  <string name="screen_notification_settings_sound_element_fade">"Element Fade"</string>
+  <string name="screen_notification_settings_sound_element_default">"Seventwos по умолчанию"</string>
+  <string name="screen_notification_settings_sound_element_fade">"Seventwos Fade"</string>
   <string name="screen_notification_settings_sound_import_sound_error_title">"Ошибка импорта файла"</string>
   <string name="screen_notification_settings_sound_preview_sound_error_title">"Ошибка предварительного прослушиванием звука"</string>
   <string name="screen_notification_settings_sound_section_title">"Звук"</string>

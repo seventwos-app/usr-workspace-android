@@ -1,11 +1,7 @@
 name: Pull Request
 on:
-  pull_request_target:
+  pull_request_target: # zizmor: ignore[dangerous-triggers]
     types: [ opened, edited, labeled, unlabeled, synchronize ]
-  workflow_call: # zizmor: ignore[dangerous-triggers]
-    secrets:
-      ELEMENT_BOT_TOKEN:
-        required: true
 
 permissions: {}
 
@@ -22,34 +18,6 @@ jobs:
         with:
           script: |
             core.setFailed("PR has been labeled with X-Blocked; it cannot be merged.");
-
-  community-prs:
-    name: Label Community PRs
-    runs-on: ubuntu-latest
-    if: github.event.action == 'opened'
-    permissions:
-      pull-requests: write
-    steps:
-      - name: Check membership
-        if: github.event.pull_request.user.login != 'renovate[bot]'
-        uses: tspascoal/get-user-teams-membership@b2546c5affc730fd8e3d8483ae9ad3621938c2f9 # v4.0.2
-        id: teams
-        with:
-          username: ${{ github.event.pull_request.user.login }}
-          organization: element-hq
-          team: Vector Core
-          GITHUB_TOKEN: ${{ secrets.ELEMENT_BOT_TOKEN_READ_ORG }}
-      - name: Add label
-        if: steps.teams.outputs.isTeamMember == 'false'
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            github.rest.issues.addLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: ['Z-Community-PR']
-            });
 
   close-if-fork-develop:
     name: Forbid develop branch fork contributions

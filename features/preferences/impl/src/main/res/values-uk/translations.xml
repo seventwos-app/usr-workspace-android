@@ -89,8 +89,8 @@
   <string name="screen_notification_settings_sound_custom_fallback">"Власний"</string>
   <string name="screen_notification_settings_sound_custom_sound_button_title">"Користувацький звук…"</string>
   <string name="screen_notification_settings_sound_delete_sound_error_title">"Помилка видалення файлу"</string>
-  <string name="screen_notification_settings_sound_element_default">"Типово Element"</string>
-  <string name="screen_notification_settings_sound_element_fade">"Згасання Element"</string>
+  <string name="screen_notification_settings_sound_element_default">"Типово Seventwos"</string>
+  <string name="screen_notification_settings_sound_element_fade">"Згасання Seventwos"</string>
   <string name="screen_notification_settings_sound_import_sound_error_title">"Помилка імпорту файлу"</string>
   <string name="screen_notification_settings_sound_preview_sound_error_title">"Проблема з попереднім прослуховуванням звуку сповіщення"</string>
   <string name="screen_notification_settings_sound_section_title">"Звук"</string>

@@ -88,8 +88,8 @@ Si continúas, es posible que algunos de tus ajustes cambien."</string>
   <string name="screen_notification_settings_sound_custom_fallback">"Personalizado"</string>
   <string name="screen_notification_settings_sound_custom_sound_button_title">"Sonido personalizado…"</string>
   <string name="screen_notification_settings_sound_delete_sound_error_title">"Error al eliminar el archivo"</string>
-  <string name="screen_notification_settings_sound_element_default">"Predeterminado de Element"</string>
-  <string name="screen_notification_settings_sound_element_fade">"Desvanecimiento de Element"</string>
+  <string name="screen_notification_settings_sound_element_default">"Predeterminado de Seventwos"</string>
+  <string name="screen_notification_settings_sound_element_fade">"Desvanecimiento de Seventwos"</string>
   <string name="screen_notification_settings_sound_import_sound_error_title">"Error al importar el archivo"</string>
   <string name="screen_notification_settings_sound_preview_sound_error_title">"Problema al previsualizar el sonido de alerta"</string>
   <string name="screen_notification_settings_sound_section_title">"Sonido"</string>

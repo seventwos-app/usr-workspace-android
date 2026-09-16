@@ -91,8 +91,8 @@ Dacă continuați, unele dintre setările dumneavoastră pot fi modificate."</st
   <string name="screen_notification_settings_sound_custom_fallback">"Personalizat"</string>
   <string name="screen_notification_settings_sound_custom_sound_button_title">"Sunet personalizat…"</string>
   <string name="screen_notification_settings_sound_delete_sound_error_title">"Eroare la ștergerea fișierului"</string>
-  <string name="screen_notification_settings_sound_element_default">"Element Implicit"</string>
-  <string name="screen_notification_settings_sound_element_fade">"Element Fade"</string>
+  <string name="screen_notification_settings_sound_element_default">"Seventwos Implicit"</string>
+  <string name="screen_notification_settings_sound_element_fade">"Seventwos Fade"</string>
   <string name="screen_notification_settings_sound_import_sound_error_title">"Eroare la importul fișierului"</string>
   <string name="screen_notification_settings_sound_preview_sound_error_title">"A fost intâmpinată o problemă la previzualizarea sunetului de alertă"</string>
   <string name="screen_notification_settings_sound_section_title">"Sunet"</string>

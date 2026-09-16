@@ -12,24 +12,23 @@ object ApplicationConfig {
     /**
      * Application name used in the UI for string. If empty, the value is taken from the resources `R.string.app_name`.
      * Note that this value is not used for the launcher icon.
-     * For Element, the value is empty, and so read from `R.string.app_name`, which depends on the build variant:
-     * - "Element X" for release builds;
-     * - "Element X dbg" for debug builds;
-     * - "Element X nightly" for nightly builds.
+     * For Seventwos, the value is empty, and so read from `R.string.app_name`, which depends on the build variant
+     * and [config.BuildTimeConfig.APPLICATION_NAME] (for instance "Seventwos Workspace dbg" for debug builds).
      */
     const val APPLICATION_NAME: String = ""
 
     /**
-     * Used in the strings to reference the Element client.
+     * Used in the strings to reference the production client, for instance in onboarding and QR
+     * code sign-in screens.
      * Cannot be empty.
-     * For Element, the value is "Element".
+     * For Seventwos, the value is "Seventwos Workspace".
      */
-    const val PRODUCTION_APPLICATION_NAME: String = "Element"
+    const val PRODUCTION_APPLICATION_NAME: String = "Seventwos Workspace"
 
     /**
-     * Used in the strings to reference the Element Desktop client, for instance Element Web.
+     * Used in the strings to reference the desktop client, for instance in QR code sign-in screens.
      * Cannot be empty.
-     * For Element, the value is "Element". We use the same name for desktop and mobile for now.
+     * For Seventwos, we use the same name for desktop and mobile for now.
      */
-    const val DESKTOP_APPLICATION_NAME: String = "Element"
+    const val DESKTOP_APPLICATION_NAME: String = "Seventwos Workspace"
 }
