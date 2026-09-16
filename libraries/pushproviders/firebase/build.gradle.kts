@@ -8,6 +8,8 @@
 
 @file:Suppress("UnstableApiUsage")
 
+import config.BuildTimeConfig
+import extension.buildConfigFieldStr
 import extension.setupDependencyInjection
 import extension.testCommonDependencies
 import org.gradle.kotlin.dsl.withType
@@ -83,5 +85,3 @@ dependencies {
     testImplementation(projects.libraries.troubleshoot.test)
     testImplementation(projects.services.toolbox.test)
 }
-import config.BuildTimeConfig
-import extension.buildConfigFieldStr

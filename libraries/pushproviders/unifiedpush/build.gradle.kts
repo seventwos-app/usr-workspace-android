@@ -1,3 +1,5 @@
+import config.BuildTimeConfig
+import extension.buildConfigFieldStr
 import extension.setupDependencyInjection
 import extension.testCommonDependencies
 
@@ -68,5 +70,3 @@ dependencies {
     testImplementation(projects.libraries.troubleshoot.test)
     testImplementation(projects.services.toolbox.test)
 }
-import config.BuildTimeConfig
-import extension.buildConfigFieldStr
