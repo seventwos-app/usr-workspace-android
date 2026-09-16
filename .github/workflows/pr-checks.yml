@@ -32,10 +32,10 @@ jobs:
             const FROZEN_CLASSES = [
             ];
 
-            // Translation changes need the repository's existing PR-i18n label so reviewers can
+            // Translation changes need a dedicated review label so reviewers can
             // identify them; unlabelled changes stay visible as a warning instead of failing all
             // legitimate localization contributions.
-            const TRANSLATION_LABEL = "PR-i18n";
+            const TRANSLATION_LABEL = "i18n-review";
 
             const pr = context.payload.pull_request;
             const body = pr.body ?? "";
