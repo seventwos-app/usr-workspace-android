@@ -1,4 +1,4 @@
-# AGENTS.md — Element X Android
+# AGENTS.md — Seventwos Workspace for Android
 
 > **Repo:** `element-hq/element-x-android` — Android Matrix client (Compose UI + `matrix-rust-sdk`).
 
