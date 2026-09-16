@@ -1,6 +1,9 @@
-# Installing Seventwos Workspace for Android from a GitHub Release
+# Installing Seventwos Workspace for Android from a GitHub release
 
-This document explains how to install Seventwos Workspace for Android from a GitHub Release.
+This document explains how to install Seventwos Workspace for Android from a published GitHub release.
+The protected release workflow first produces signed build artifacts in GitHub Actions. A maintainer then verifies
+those artifacts and explicitly publishes selected files to a GitHub release. Workflow artifacts alone are not a
+public release.
 
 <!--- TOC -->
 
@@ -65,11 +68,12 @@ brew install bundletool
 ### Steps
 
 1. Open the GitHub release that you want to install from https://github.com/seventwos-app/usr-workspace-android/releases
-2. Download the asset `app-gplay-release-signed.aab`
+2. Download the asset `app-gplay-release.aab`. This is the signed bundle produced and verified by the protected
+   release process; the filename does not include a `-signed` suffix.
 3. Navigate to the folder where you cloned the project and run the following command. Bundletool
 will preserve and verify the signature carried by the signed app bundle:
 ```bash
-bundletool build-apks --bundle=<PATH_TO_YOUR_APP-GPLAY-RELEASE-SIGNED.AAB_FILE> \
+bundletool build-apks --bundle=<PATH_TO_YOUR_APP-GPLAY-RELEASE.AAB_FILE> \
       --output=./tmp/seventwos-workspace.apks --mode=universal --overwrite
 ```
 4. Run an Android emulator, or connect a real device to your computer
