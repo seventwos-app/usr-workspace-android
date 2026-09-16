@@ -77,8 +77,7 @@ jobs:
             }
 
             if (!TRANSLATION_ALLOW_LIST.includes(pr.user.login) && paths.some(path => path.endsWith("translations.xml"))) {
-              failures.push("Some translation files have been edited. Only user `ElementBot` (i.e. translations coming from Localazy) is allowed to do that. " +
-                "Please read more about translations management [in the doc](https://github.com/element-hq/element-x-android/blob/develop/CONTRIBUTING.md#strings).");
+              failures.push("Translation files are managed through the repository's localisation workflow and must not be edited manually.");
             }
 
             warnings.forEach(warning => core.warning(warning));
