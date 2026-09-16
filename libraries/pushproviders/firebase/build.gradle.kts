@@ -8,6 +8,8 @@
 
 @file:Suppress("UnstableApiUsage")
 
+import config.BuildTimeConfig
+import extension.buildConfigFieldStr
 import extension.setupDependencyInjection
 import extension.testCommonDependencies
 import org.gradle.kotlin.dsl.withType
@@ -21,7 +23,15 @@ android {
     namespace = "io.element.android.libraries.pushproviders.firebase"
 
     buildFeatures {
+        buildConfig = true
         resValues = true
+    }
+
+    defaultConfig {
+        buildConfigFieldStr(
+            name = "PUSH_GATEWAY_URL",
+            value = BuildTimeConfig.FIREBASE_PUSH_GATEWAY ?: "",
+        )
     }
 
     buildTypes {

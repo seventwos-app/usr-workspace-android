@@ -13,8 +13,9 @@
 
 Element X embeds a copy of [Element Call](https://github.com/element-hq/element-call) in the
 application assets and loads it from
-`https://appassets.androidplatform.net/element-call/index.html`. Calls therefore work out of the box
-with no extra deployment, and the embedded copy is the one every user gets.
+`https://appassets.androidplatform.net/element-call/index.html`. Calls are disabled in Seventwos
+builds by default and are enabled only when `SEVENTWOS_ANDROID_CALLS_ENABLED=true` is supplied.
+Enabling calls requires Seventwos to approve and operate the required Matrix RTC infrastructure.
 
 Developers can point the application at another Element Call deployment instead — a local
 development server, a staging deployment, or a self-hosted one — with the **Element Call base URL**
@@ -31,11 +32,8 @@ room, not the URL of the deployment root. For the public deployments that means:
 
 | Deployment | Value to enter |
 |---|---|
-| `call.element.io` | `https://call.element.io/room` |
-| `call.element.dev` | `https://call.element.dev/room` |
-
-Entering `https://call.element.io` without the `/room` suffix loads the Element Call lobby rather
-than the room, so the call is never joined.
+No Element-operated deployment is configured by default. Supply only a reviewed Seventwos-owned
+deployment URL.
 
 ## Why the application does not add the room path itself
 

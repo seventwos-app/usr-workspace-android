@@ -1,3 +1,4 @@
+import config.BuildTimeConfig
 import extension.setupDependencyInjection
 import extension.testCommonDependencies
 
@@ -15,6 +16,12 @@ plugins {
 
 android {
     namespace = "io.element.android.features.enterprise.impl"
+    buildFeatures {
+        buildConfig = true
+    }
+    defaultConfig {
+        buildConfigField("boolean", "CALLS_ENABLED", BuildTimeConfig.CALLS_ENABLED.toString())
+    }
 }
 
 setupDependencyInjection()

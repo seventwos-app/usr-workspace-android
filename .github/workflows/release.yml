@@ -1,108 +1,73 @@
-name: Create release App Bundle and APKs
+name: Build signed Android release artifacts
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
-permissions: {}
+permissions:
+  contents: read
 
-# Enrich gradle.properties for CI/CD
 env:
   GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx8g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError -XX:+UseG1GC -Dkotlin.daemon.jvm.options=-Xmx4g
   CI_GRADLE_ARG_PROPERTIES: --stacktrace --no-daemon -Dsonar.gradle.skipCompile=true --no-configuration-cache
 
 jobs:
-  gplay:
-    name: Create App Bundle (Gplay)
+  release:
+    name: Build and verify signed artifacts
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
+    environment: android-release
     concurrency:
-      group: ${{ format('build-release-main-gplay-{0}', github.sha) }}
-      cancel-in-progress: true
+      group: android-release
+      cancel-in-progress: false
     steps:
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
-        with:
-          # This might remove tools that are actually needed, if set to "true" but frees about 6 GB
-          tool-cache: true
-          # All of these default to true, but we should only need the 'android' one (and maybe swap-storage?)
-          android: false
-          dotnet: true
-          haskell: true
-          # This takes way too long to run (~2 minutes) and it saves only ~5.5GB
-          large-packages: false
-          docker-images: true
-          swap-storage: false
-
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Use JDK 21
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
-          distribution: 'temurin' # See 'Supported distributions' for available options
-          java-version: '21'
-      - name: Configure gradle
+          distribution: temurin
+          java-version: "21"
+      - name: Configure Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
-      - name: Create app bundle
+      - name: Materialize protected signing key
         env:
-          ELEMENT_ANDROID_MAPTILER_API_KEY: ${{ secrets.MAPTILER_KEY }}
-          ELEMENT_ANDROID_MAPTILER_LIGHT_MAP_ID: ${{ secrets.MAPTILER_LIGHT_MAP_ID }}
-          ELEMENT_ANDROID_MAPTILER_DARK_MAP_ID: ${{ secrets.MAPTILER_DARK_MAP_ID }}
-          ELEMENT_ANDROID_SENTRY_DSN: ${{ secrets.ELEMENT_ANDROID_SENTRY_DSN }}
-          ELEMENT_SDK_SENTRY_DSN: ${{ secrets.ELEMENT_SDK_SENTRY_DSN }}
-          ELEMENT_CALL_SENTRY_DSN: ${{ secrets.ELEMENT_CALL_SENTRY_DSN }}
-          ELEMENT_CALL_POSTHOG_API_HOST: ${{ secrets.ELEMENT_CALL_POSTHOG_API_HOST }}
-          ELEMENT_CALL_POSTHOG_API_KEY: ${{ secrets.ELEMENT_CALL_POSTHOG_API_KEY }}
-          ELEMENT_CALL_RAGESHAKE_URL: ${{ secrets.ELEMENT_CALL_RAGESHAKE_URL }}
-        run: ./gradlew bundleGplayRelease $CI_GRADLE_ARG_PROPERTIES
-      - name: Upload bundle as artifact
+          KEYSTORE_BASE64: ${{ secrets.SEVENTWOS_ANDROID_SIGNING_KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.SEVENTWOS_ANDROID_SIGNING_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.SEVENTWOS_ANDROID_SIGNING_KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.SEVENTWOS_ANDROID_SIGNING_STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for value in KEYSTORE_BASE64 KEY_ALIAS KEY_PASSWORD STORE_PASSWORD; do
+            test -n "${!value}" || { echo "::error::Missing protected secret ${value}"; exit 1; }
+          done
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/seventwos-release.keystore"
+          chmod 600 "$RUNNER_TEMP/seventwos-release.keystore"
+          keytool -list -keystore "$RUNNER_TEMP/seventwos-release.keystore" \
+            -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
+      - name: Build release artifacts
+        env:
+          SEVENTWOS_ANDROID_SIGNING_KEYSTORE_PATH: ${{ runner.temp }}/seventwos-release.keystore
+          SEVENTWOS_ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.SEVENTWOS_ANDROID_SIGNING_KEY_ALIAS }}
+          SEVENTWOS_ANDROID_SIGNING_KEY_PASSWORD: ${{ secrets.SEVENTWOS_ANDROID_SIGNING_KEY_PASSWORD }}
+          SEVENTWOS_ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.SEVENTWOS_ANDROID_SIGNING_STORE_PASSWORD }}
+        run: ./gradlew bundleGplayRelease assembleFdroidRelease $CI_GRADLE_ARG_PROPERTIES
+      - name: Verify identity and signatures
+        run: |
+          set -euo pipefail
+          jarsigner -verify app/build/outputs/bundle/gplayRelease/app-gplay-release.aab
+          for apk in app/build/outputs/apk/fdroid/release/*.apk; do
+            "$ANDROID_HOME/build-tools/37.0.0/apksigner" verify --verbose --print-certs "$apk" |
+              tee "$RUNNER_TEMP/apksigner.txt"
+            ! grep -qi "Android Debug" "$RUNNER_TEMP/apksigner.txt"
+            "$ANDROID_HOME/build-tools/37.0.0/aapt" dump badging "$apk" |
+              grep -F "package: name='org.seventwos.workspace'"
+          done
+      - name: Upload verified artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: elementx-app-gplay-bundle-unsigned
+          name: seventwos-workspace-android-${{ github.sha }}
+          if-no-files-found: error
           path: |
             app/build/outputs/bundle/gplayRelease/app-gplay-release.aab
-
-  fdroid:
-    name: Create APKs (FDroid)
-    runs-on: ubuntu-latest
-    concurrency:
-      group: ${{ format('build-release-main-fdroid-{0}', github.sha) }}
-      cancel-in-progress: true
-    steps:
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
-        with:
-          # This might remove tools that are actually needed, if set to "true" but frees about 6 GB
-          tool-cache: true
-          # All of these default to true, but we should only need the 'android' one (and maybe swap-storage?)
-          android: false
-          dotnet: true
-          haskell: true
-          # This takes way too long to run (~2 minutes) and it saves only ~5.5GB
-          large-packages: false
-          docker-images: true
-          swap-storage: false
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Use JDK 21
-        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
-        with:
-          distribution: 'temurin' # See 'Supported distributions' for available options
-          java-version: '21'
-      - name: Configure gradle
-        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
-      - name: Create APKs
-        env:
-          ELEMENT_ANDROID_MAPTILER_API_KEY: ${{ secrets.MAPTILER_KEY }}
-          ELEMENT_ANDROID_MAPTILER_LIGHT_MAP_ID: ${{ secrets.MAPTILER_LIGHT_MAP_ID }}
-          ELEMENT_ANDROID_MAPTILER_DARK_MAP_ID: ${{ secrets.MAPTILER_DARK_MAP_ID }}
-        run: ./gradlew assembleFdroidRelease $CI_GRADLE_ARG_PROPERTIES
-      - name: Upload apks as artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: elementx-app-fdroid-apks-unsigned
-          path: |
             app/build/outputs/apk/fdroid/release/*.apk

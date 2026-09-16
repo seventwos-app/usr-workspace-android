@@ -44,7 +44,8 @@ If the application was already installed on your phone, there are several cases:
 
 The GitHub release can contain an Android App Bundle (with `aab` extension), which needs to be converted into APKs suitable for the target device.
 
-The repository includes a debug signing key for development use. You can use a different key instead. You do not need Android Studio, only a shell terminal.
+Release artifacts must already be signed by the protected Seventwos release workflow. The
+repository debug key is development-only and must never be used for a release.
 
 You can clone the project by running:
 ```bash
@@ -65,17 +66,11 @@ brew install bundletool
 
 1. Open the GitHub release that you want to install from https://github.com/seventwos-app/usr-workspace-android/releases
 2. Download the asset `app-gplay-release-signed.aab`
-3. Navigate to the folder where you cloned the project and run the following command:
+3. Navigate to the folder where you cloned the project and run the following command. Bundletool
+will preserve and verify the signature carried by the signed app bundle:
 ```bash
-bundletool build-apks --bundle=<PATH_TO_YOUR_APP-GPLAY-RELEASE-SIGNED.AAB_FILE> --output=./tmp/seventwos-workspace.apks \
-      --ks=./app/signature/debug.keystore --ks-pass=pass:android --ks-key-alias=androiddebugkey --key-pass=pass:android \
-      --overwrite
-```
-For instance:
-```bash
-bundletool build-apks --bundle=./tmp/SeventwosWorkspace/26.08.3/app-gplay-release-signed.aab --output=./tmp/seventwos-workspace.apks \
-      --ks=./app/signature/debug.keystore --ks-pass=pass:android --ks-key-alias=androiddebugkey --key-pass=pass:android \
-      --overwrite
+bundletool build-apks --bundle=<PATH_TO_YOUR_APP-GPLAY-RELEASE-SIGNED.AAB_FILE> \
+      --output=./tmp/seventwos-workspace.apks --mode=universal --overwrite
 ```
 4. Run an Android emulator, or connect a real device to your computer
 5. Install the APKs on the device:

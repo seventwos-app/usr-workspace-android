@@ -31,4 +31,9 @@ class AboutPresenterTest {
             assertThat(initialState.elementLegals).isEqualTo(getAllLegals())
         }
     }
+
+    @Test
+    fun `legal entries with unconfigured URLs are omitted`() {
+        assertThat(getAllLegals()).isEmpty()
+    }
 }

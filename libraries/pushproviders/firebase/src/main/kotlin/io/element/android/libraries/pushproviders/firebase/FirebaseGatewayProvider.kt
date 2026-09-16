@@ -21,6 +21,8 @@ class DefaultFirebaseGatewayProvider(
     private val enterpriseService: EnterpriseService,
 ) : FirebaseGatewayProvider {
     override fun getFirebaseGateway(): String {
-        return enterpriseService.firebasePushGateway() ?: FirebaseConfig.PUSHER_HTTP_URL
+        return enterpriseService.firebasePushGateway()
+            ?: FirebaseConfig.PUSHER_HTTP_URL.takeIf(String::isNotBlank)
+            ?: error("Firebase push is enabled without a Seventwos push gateway")
     }
 }

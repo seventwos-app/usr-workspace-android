@@ -11,7 +11,6 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType.ABI
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.android.build.gradle.tasks.GenerateBuildConfig
-import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
 import config.BuildTimeConfig
 import extension.AssetCopyTask
 import extension.GitBranchNameValueSource
@@ -29,8 +28,6 @@ import java.util.Locale
 
 plugins {
     id("io.element.android-compose-application")
-    // When using precompiled plugins, we need to apply the firebase plugin like this
-    id(libs.plugins.firebaseAppDistribution.get().pluginId)
     id("kotlin-parcelize")
     alias(libs.plugins.licensee)
     alias(libs.plugins.kotlin.serialization)
@@ -87,14 +84,23 @@ android {
             storeFile = file("./signature/debug.keystore")
             storePassword = "android"
         }
-        register("nightly") {
-            keyAlias = System.getenv("ELEMENT_ANDROID_NIGHTLY_KEYID")
-                ?: project.property("signing.element.nightly.keyId") as? String?
-            keyPassword = System.getenv("ELEMENT_ANDROID_NIGHTLY_KEYPASSWORD")
-                ?: project.property("signing.element.nightly.keyPassword") as? String?
-            storeFile = file("./signature/nightly.keystore")
-            storePassword = System.getenv("ELEMENT_ANDROID_NIGHTLY_STOREPASSWORD")
-                ?: project.property("signing.element.nightly.storePassword") as? String?
+        val releaseSigningValues = mapOf(
+            "keystore path" to System.getenv("SEVENTWOS_ANDROID_SIGNING_KEYSTORE_PATH"),
+            "key alias" to System.getenv("SEVENTWOS_ANDROID_SIGNING_KEY_ALIAS"),
+            "key password" to System.getenv("SEVENTWOS_ANDROID_SIGNING_KEY_PASSWORD"),
+            "store password" to System.getenv("SEVENTWOS_ANDROID_SIGNING_STORE_PASSWORD"),
+        )
+        val configuredValues = releaseSigningValues.values.count { it.isNullOrBlank().not() }
+        require(configuredValues == 0 || configuredValues == releaseSigningValues.size) {
+            "Release signing configuration is incomplete. Provide every SEVENTWOS_ANDROID_SIGNING_* value."
+        }
+        if (configuredValues == releaseSigningValues.size) {
+            register("release") {
+                storeFile = file(checkNotNull(releaseSigningValues["keystore path"]))
+                keyAlias = releaseSigningValues["key alias"]
+                keyPassword = releaseSigningValues["key password"]
+                storePassword = releaseSigningValues["store password"]
+            }
         }
     }
 
@@ -122,7 +128,7 @@ android {
                 "login_redirect_scheme",
                 oAuthRedirectSchemeBase,
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release")
 
             optimization {
                 enable = true
@@ -147,28 +153,16 @@ android {
                 "$oAuthRedirectSchemeBase.nightly",
             )
             matchingFallbacks += listOf("release")
-            signingConfig = signingConfigs.getByName("nightly")
+            signingConfig = signingConfigs.findByName("release")
+        }
+    }
 
-            firebaseAppDistribution {
-                artifactType = "APK"
-                // We upload the universal APK to fix this error:
-                // "App Distribution found more than 1 output file for this variant.
-                // Please contact firebase-support@google.com for help using APK splits with App Distribution."
-                artifactPath = "$rootDir/app/build/outputs/apk/gplay/nightly/app-gplay-universal-nightly.apk"
-                // artifactType = "AAB"
-                // artifactPath = "$rootDir/app/build/outputs/bundle/nightly/app-nightly.aab"
-                releaseNotesFile = "tools/release/ReleaseNotesNightly.md"
-                groups = if (isEnterpriseBuild) {
-                    "enterprise-testers"
-                } else {
-                    "external-testers"
-                }
-                // This should not be required, but if I do not add the appId, I get this error:
-                // "App Distribution halted because it had a problem uploading the APK: [404] Requested entity was not found."
-                appId = if (isEnterpriseBuild) {
-                    "1:912726360885:android:3f7e1fe644d99d5a00427c"
-                } else {
-                    "1:912726360885:android:e17435e0beb0303000427c"
+    val releaseSigningConfigured = android.signingConfigs.findByName("release") != null
+    tasks.configureEach {
+        if (name.matches(Regex("(assemble|bundle|package).*(Release)$"))) {
+            doFirst {
+                check(releaseSigningConfigured) {
+                    "Release artifacts require protected SEVENTWOS_ANDROID_SIGNING_* environment variables."
                 }
             }
         }

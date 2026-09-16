@@ -16,6 +16,6 @@ import io.element.android.libraries.di.SessionScope
 class DefaultSessionEnterpriseService : SessionEnterpriseService {
     override suspend fun init() = Unit
     override suspend fun tweakMasUrl(url: String): String = url
-    override suspend fun isElementCallAvailable(): Boolean = true
+    override suspend fun isElementCallAvailable(): Boolean = BuildConfig.CALLS_ENABLED
     override suspend fun isEncryptionDisabledByHomeserver(): Boolean = false
 }
