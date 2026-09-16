@@ -15,6 +15,19 @@ plugins {
 
 android {
     namespace = "io.element.android.libraries.pushproviders.unifiedpush"
+    buildFeatures {
+        buildConfig = true
+    }
+    defaultConfig {
+        buildConfigFieldStr(
+            name = "PUSH_GATEWAY_URL",
+            value = BuildTimeConfig.UNIFIED_PUSH_GATEWAY ?: "",
+        )
+        buildConfigFieldStr(
+            name = "DISTRIBUTORS_URL",
+            value = BuildTimeConfig.UNIFIED_PUSH_DISTRIBUTORS_URL ?: "",
+        )
+    }
 }
 
 setupDependencyInjection()
@@ -55,3 +68,5 @@ dependencies {
     testImplementation(projects.libraries.troubleshoot.test)
     testImplementation(projects.services.toolbox.test)
 }
+import config.BuildTimeConfig
+import extension.buildConfigFieldStr

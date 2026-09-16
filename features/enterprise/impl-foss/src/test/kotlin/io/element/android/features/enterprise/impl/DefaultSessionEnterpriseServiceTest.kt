@@ -14,8 +14,8 @@ import org.junit.Test
 
 class DefaultSessionEnterpriseServiceTest {
     @Test
-    fun `isElementCallAvailable is always true`() = runTest {
+    fun `calls are disabled without Seventwos call configuration`() = runTest {
         val service = DefaultSessionEnterpriseService()
-        assertThat(service.isElementCallAvailable()).isTrue()
+        assertThat(service.isElementCallAvailable()).isFalse()
     }
 }

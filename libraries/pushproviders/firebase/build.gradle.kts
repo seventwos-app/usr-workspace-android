@@ -21,7 +21,15 @@ android {
     namespace = "io.element.android.libraries.pushproviders.firebase"
 
     buildFeatures {
+        buildConfig = true
         resValues = true
+    }
+
+    defaultConfig {
+        buildConfigFieldStr(
+            name = "PUSH_GATEWAY_URL",
+            value = BuildTimeConfig.FIREBASE_PUSH_GATEWAY ?: "",
+        )
     }
 
     buildTypes {
@@ -75,3 +83,5 @@ dependencies {
     testImplementation(projects.libraries.troubleshoot.test)
     testImplementation(projects.services.toolbox.test)
 }
+import config.BuildTimeConfig
+import extension.buildConfigFieldStr

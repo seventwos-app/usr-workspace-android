@@ -1,4 +1,7 @@
-This document aims to describe how Element android displays notifications to the end user. It also clarifies notifications and background settings in the app.
+This document describes Android notifications and background behavior. In Seventwos Workspace,
+Firebase and UnifiedPush are disabled by default, so foreground sync remains available but
+background push notifications are unavailable until Seventwos-owned infrastructure is configured.
+See [Android release readiness](release_readiness.md) for the required build inputs.
 
 # Table of Contents
 
@@ -280,5 +283,4 @@ Configure Sygnal to send or not notifications to all user devices.
 **Notifications > Enable notifications for this device**
 
 Disable notifications locally. The push server will continue to send notifications to the device but this one will ignore them.
-
 

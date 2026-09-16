@@ -28,11 +28,11 @@ We want:
 1. The CI to detect as soon as possible any issue in the code
 2. The CI to be fast - it's run on all the Pull Requests, and developers do not like to wait too long
 3. The CI to be reliable - it should not fail randomly
-4. The CI to generate artifacts which can be used by the team and the community
+4. The CI to generate development artifacts which can be used by the team and the community
 5. The CI to generate useful logs and reports, not too verbose, not too short
 6. The developer to be able to run the CI locally - to help with this we have [a script](../tools/check/check_code_quality.sh) the can be run locally and which does more checks that just building and deploying the app.
-7. The CI to be used as a common environment for the team: generate the screenshots image for the screenshot test, build the release build (unsigned)
-8. The CI to run repeated tasks, like building the nightly builds, integrating data from external tools (translations, etc.)
+7. The CI to compile release sources without exposing production signing credentials
+8. Release artifacts to be built only by a manually dispatched, protected workflow
 9. The CI to upgrade our dependencies (Renovate)
 10. The CI to do some issue triaging
 
@@ -52,7 +52,11 @@ The CI checks that:
 The CI reports:
 
 1. Code coverage reports
-2. Sonar reports
+2. Build and test artifacts retained by GitHub Actions
+
+Production signing secrets are scoped to the `android-release` environment and are not available
+to pull-request workflows. The release workflow performs no store or third-party upload. See
+[Android release readiness](release_readiness.md).
 
 ## Current choices
 

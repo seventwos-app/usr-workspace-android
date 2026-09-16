@@ -1,4 +1,4 @@
-# Element X Android deeplink
+# Seventwos Workspace Android deep links
 
 <!--- TOC -->
 
@@ -12,31 +12,19 @@
 
 ## Introduction
 
-Element X Android supports deep linking to specific screens in the application. This document explains how to use deep links in Element X Android.
+Seventwos Workspace supports Matrix links, the `seventwos-workspace://open` internal scheme, and
+verified HTTPS links on `workspace.seventwos.org`.
 
 ### Asset Links
 
-The asset links file is available at https://element.io/.well-known/assetlinks.json
+Before production release, publish the final signing certificate association at
+`https://workspace.seventwos.org/.well-known/assetlinks.json`. The certificate fingerprint cannot
+be populated until Seventwos creates the production signing key.
 
 ### Supported links
 
-Element Call link: 
-> https://call.element.io/Example
-
-Link to a user:
-> https://app.element.io/#/user/@alice:matrix.org
-
-Link to a room by id or alias:
-> https://app.element.io/#/room/!roomid:matrix.org
-> https://app.element.io/#/room/#element-x-android:matrix.org
-
-Link to a room with a specific event:
-> https://app.element.io/#/room/!roomid:matrix.org/$eventid
-
-Note that it will also work with other domain such as:
-> https://mobile.element.io
-> https://develop.element.io
-> https://staging.element.io
+Matrix protocol links (`matrix:`) remain supported. HTTPS links intended to open directly in this
+application must use `https://workspace.seventwos.org`.
 
 ## Developer tools
 
@@ -44,28 +32,26 @@ Using an Android 12 or higher emulator
 
 Ensure links verification is enabled
 ```bash
-adb shell am compat enable 175408749 io.element.android.x.debug  
+adb shell am compat enable 175408749 org.seventwos.workspace.debug
 ```
 
 Reset link verifications for the given package id
 ```bash
-adb shell pm set-app-links --package io.element.android.x.debug 0 all 
+adb shell pm set-app-links --package org.seventwos.workspace.debug 0 all
 ```
 
 Force the package id links to be verified
 ```bash
-adb shell pm verify-app-links --re-verify io.element.android.x.debug 
+adb shell pm verify-app-links --re-verify org.seventwos.workspace.debug
 ```
 
 Print the link verification of the package id
 ```bash
-adb shell pm get-app-links io.element.android.x.debug
+adb shell pm get-app-links org.seventwos.workspace.debug
 ```
 
 ```
-  io.element.android.x.debug:
-    ID: e2ece472-c266-4bf0-829c-be79959a6270
-    Signatures: [B0:B0:51:DC:56:5C:81:2F:E1:7F:6F:3E:94:5B:4D:79:04:71:23:AB:0D:A6:12:86:76:9E:B2:94:91:97:13:0E]
+  org.seventwos.workspace.debug:
     Domain verification state:
-      *.element.io: 1024
+      workspace.seventwos.org: verified
 ```
