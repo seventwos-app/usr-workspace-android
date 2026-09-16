@@ -67,15 +67,15 @@ echo "Committing changes"
 git config http.sslVerify false
 
 if [[ -z ${INPUT_AUTHOR_NAME} ]]; then
-  git config user.name "ElementBot"
+  git config user.name "github-actions[bot]"
 else
   git config --local user.name "${INPUT_AUTHOR_NAME}"
 fi
 
 if [[ -z ${INPUT_AUTHOR_EMAIL} ]]; then
-  git config user.email "android@element.io"
+  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 else
-  git config --local user.name "${INPUT_AUTHOR_EMAIL}"
+  git config --local user.email "${INPUT_AUTHOR_EMAIL}"
 fi
 git add -A
 if git diff --cached --quiet; then
