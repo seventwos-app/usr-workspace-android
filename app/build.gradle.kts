@@ -159,10 +159,10 @@ android {
 
     val releaseSigningConfigured = android.signingConfigs.findByName("release") != null
     tasks.configureEach {
-        if (name.matches(Regex("(assemble|bundle|package).*(Release)$"))) {
+        if (name.matches(Regex("(assemble|bundle|package).*(Release|Nightly)$"))) {
             doFirst {
                 check(releaseSigningConfigured) {
-                    "Release artifacts require protected SEVENTWOS_ANDROID_SIGNING_* environment variables."
+                    "Release and nightly artifacts require protected SEVENTWOS_ANDROID_SIGNING_* environment variables."
                 }
             }
         }

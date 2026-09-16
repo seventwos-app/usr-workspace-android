@@ -15,11 +15,11 @@ environment with required reviewers and these protected secrets:
 - `SEVENTWOS_ANDROID_SIGNING_KEY_PASSWORD`
 - `SEVENTWOS_ANDROID_SIGNING_STORE_PASSWORD`
 
-The workflow verifies the keystore, APK signatures, absence of the Android debug certificate, and
-the application identifier. It uploads artifacts only to GitHub Actions; it does not publish to
-Google Play, Firebase App Distribution, or another external service. The production keystore must
-be generated, backed up, access-controlled, and rotated according to Seventwos policy before the
-first release.
+The workflow verifies the keystore; verifies the AAB and APK signatures; rejects the Android debug
+certificate for both artifact types; and verifies the APK application identifier. It uploads
+artifacts only to GitHub Actions; it does not publish to Google Play, Firebase App Distribution, or
+another external service. The production keystore must be generated, backed up, access-controlled,
+and rotated according to Seventwos policy before the first release.
 
 ## External requirements
 

@@ -11,7 +11,7 @@
 
 ## Overview
 
-Element X embeds a copy of [Element Call](https://github.com/element-hq/element-call) in the
+Seventwos Workspace embeds a copy of [Element Call](https://github.com/element-hq/element-call) in the
 application assets and loads it from
 `https://appassets.androidplatform.net/element-call/index.html`. Calls are disabled in Seventwos
 builds by default and are enabled only when `SEVENTWOS_ANDROID_CALLS_ENABLED=true` is supplied.
