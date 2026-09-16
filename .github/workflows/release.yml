@@ -55,7 +55,9 @@ jobs:
       - name: Verify identity and signatures
         run: |
           set -euo pipefail
-          jarsigner -verify app/build/outputs/bundle/gplayRelease/app-gplay-release.aab
+          jarsigner -verify -verbose -certs app/build/outputs/bundle/gplayRelease/app-gplay-release.aab |
+            tee "$RUNNER_TEMP/jarsigner.txt"
+          ! grep -qi "Android Debug" "$RUNNER_TEMP/jarsigner.txt"
           for apk in app/build/outputs/apk/fdroid/release/*.apk; do
             "$ANDROID_HOME/build-tools/37.0.0/apksigner" verify --verbose --print-certs "$apk" |
               tee "$RUNNER_TEMP/apksigner.txt"
