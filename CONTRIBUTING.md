@@ -1,4 +1,4 @@
-# Contributing to Element X Android
+# Contributing to Seventwos Workspace for Android
 
 <!--- TOC -->
 
