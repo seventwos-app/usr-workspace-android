@@ -8,7 +8,6 @@
     1) Disable "Use Android Studio HTTP proxy settings" and pick "Manual proxy configuration".
     1) Set `127.0.0.1` as "Host name" and `8080` as "Port number".
     1) Click "Apply" and verify that "Proxy status" is "Success" and close the settings window.
-       <img width="932" alt="Screenshot 2023-10-04 at 14 48 47" src="https://github.com/element-hq/element-x-android/assets/1273124/bf99a053-20b0-42a4-91d3-9602f709f684">
     1) Alternatively, set the proxy on the device itself, which the app honours through `DefaultProxyProvider`, and which also works on a physical device:
        ```
        adb shell settings put global http_proxy 10.0.2.2:8080
@@ -18,10 +17,8 @@
     1) Open the emulator Chrome browser app
     1) Go to the url `mitm.it`
     1) Follow the instructions to install the CA cert on Android devices.
-       <img width="606" alt="Screenshot 2023-10-04 at 14 51 27" src="https://github.com/element-hq/element-x-android/assets/1273124/5f2b6f27-6958-4ea7-97fe-c7f06d105da5">
-1) Slightly modify the Element X app source code.
+1) Slightly modify the Seventwos Workspace app source code.
     1) Go to the `RustMatrixClientFactory.getBaseClientBuilder()` method, which builds every client the app creates, whether it is logging in or restoring a session.
     1) Add `.disableSslVerification()` in the `ClientBuilder` method chain.
-1) Build and run the Element X app. 
+1) Build and run the Seventwos Workspace app.
 1) Enjoy, you will see all the traffic in mitmproxy's web interface.
-   <img width="1110" alt="Screenshot 2023-10-04 at 14 50 03" src="https://github.com/element-hq/element-x-android/assets/1273124/5d039efd-448d-426c-a384-dbbceb9f33ac">

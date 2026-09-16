@@ -1,7 +1,7 @@
 ---
 name: Task that belongs to a story/epic
 about: A skeleton task where the details are all contained within a story or epic
-  on element-meta.
+  in this repository.
 title: "[Task] "
 labels: T-Task
 assignees: ''

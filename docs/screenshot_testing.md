@@ -13,7 +13,7 @@
 ## Overview
 
 - Screenshot tests are tests which record the content of a rendered screen and verify subsequent runs to check if the screen renders differently.
-- Element X uses [Paparazzi](https://github.com/cashapp/paparazzi) to render, record and verify Composables. All internal/public Composable Preview will be used for screenshot tests, thanks to the usage of [ComposablePreviewScanner](https://github.com/sergio-sastre/ComposablePreviewScanner).
+- Seventwos Workspace uses [Paparazzi](https://github.com/cashapp/paparazzi) to render, record and verify Composables. All internal/public Composable Preview will be used for screenshot tests, thanks to the usage of [ComposablePreviewScanner](https://github.com/sergio-sastre/ComposablePreviewScanner).
 - The screenshot verification occurs on every pull request as part of the `tests.yml` workflow.
 
 ## Setup
@@ -30,7 +30,7 @@ If installed correctly, `git push` and `git pull` will now include LFS content.
 
 ## Recording
 
-Recording of screenshots is done by triggering the GitHub action [Record screenshots](https://github.com/element-hq/element-x-android/actions/workflows/recordScreenshots.yml), to avoid differences of generated binary files (png images) depending on developers' environment.
+Recording of screenshots is done by triggering the repository's **Record screenshots** GitHub Action, to avoid differences in generated binary files (PNG images) across developers' environments.
 
 So basically, you will create a branch, do some commits with your work on it, then push your branch, trigger the GitHub action to record the screenshots (only if you think preview may have changed), and finally create a pull request. The GitHub action will record the screenshots and commit the changes to the branch.
 

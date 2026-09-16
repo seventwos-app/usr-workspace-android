@@ -2,8 +2,8 @@
 
 <!--- TOC -->
 
-* [Contributing to Element](#contributing-to-element)
-  * [I want to help translating Element](#i-want-to-help-translating-element)
+* [Contributing to Seventwos Workspace](#contributing-to-seventwos-workspace)
+  * [I want to help translate Seventwos Workspace](#i-want-to-help-translate-seventwos-workspace)
   * [I want to fix a bug](#i-want-to-fix-a-bug)
   * [I want to add a new feature or enhancement](#i-want-to-add-a-new-feature-or-enhancement)
   * [Etiquette](#etiquette)
@@ -12,7 +12,6 @@
   * [Android Studio settings](#android-studio-settings)
   * [Compilation](#compilation)
   * [Strings](#strings)
-  * [Element X Android Gallery](#element-x-android-gallery)
   * [Kotlin](#kotlin)
   * [Changelog](#changelog)
   * [Code quality](#code-quality)
@@ -30,18 +29,18 @@
 
 <!--- END -->
 
-## Contributing to Element
+## Contributing to Seventwos Workspace
 
-Element X Android support can be found in this room: [![Element X Android Matrix room #element-x-android:matrix.org](https://img.shields.io/matrix/element-x-android:matrix.org.svg?label=%23element-x-android:matrix.org&logo=matrix&server_fqdn=matrix.org)](https://matrix.to/#/#element-x-android:matrix.org).
+For questions about this fork, please open a GitHub issue.
 
 The rest of the document contains specific rules for Matrix Android projects.
 
-### I want to help translating Element
+### I want to help translate Seventwos Workspace
 
 To help translating, please go to [https://localazy.com/p/element](https://localazy.com/p/element).
 
 - If you want to fix an issue in other languages, or add a missing translation, or even add a new language, please go to [https://localazy.com/p/element](https://localazy.com/p/element).
-- If you want to fix an issue with an English string, please open an issue on the github project of Element X (Android or iOS). Only the core team can modify or add English strings. As an external contributor, if you want to add new strings, feel free to add an Android resource file to the project (for instance a file named `temporary.xml`), with a note in the description of the PR for the reviewer to integrate the String into `Localazy`. If accepted, the reviewer will add the String(s) for you, and then you can download them on your branch (following these [instructions](./tools/localazy/README.md#download-translations)) and remove the temporary file. Please follow the naming rules for the key. More details in [the dedicated section in this README.md](./tools/localazy/README.md#key-naming-rules) More information can be found [in this README.md](./tools/localazy/README.md).
+- If you want to fix an issue with an English string, please open an issue in this repository. As an external contributor, add new strings in an Android resource file (for instance `temporary.xml`) and note this in the PR description for the reviewer to integrate the string into Localazy. If accepted, the reviewer will add the strings; you can then download them on your branch and remove the temporary file. Follow the [key naming rules](./tools/localazy/README.md#key-naming-rules).
 
 Once a language is sufficiently translated, it will be added to the app. The core team will decide when a language is sufficiently translated.
 
@@ -55,9 +54,9 @@ To make a great product with a great user experience, all the small efforts need
 
 Before making your contribution, please consider the following:
 
-* One product can’t do everything well. Element is focusing on private end-to-end encrypted messaging and voice - this can either be for consumers (e.g. friends and family) or for professional teams and organizations. Public forums and other types of chats without E2EE remain supported but are not the primary use case in case UX compromises need to be made.
-* There are 3 platforms - Android, [iOS](https://github.com/element-hq/element-x-ios) and [Web/Desktop](https://github.com/element-hq/element-web). These platforms need to have feature parity and design consistency. For some features, supporting all platforms is a must have, in some cases exceptions can be made to have it on one platform only.
-* To make sure your idea fits both from a design/solution and use case perspective, please open a new issue (or find an existing issue) in [element-meta](https://github.com/element-hq/element-meta/issues) repository describing the use case and how you plan to tackle it. Do not just describe what feature is missing, explain why the users need it with a couple of real life examples from the field.
+* Seventwos Workspace prioritises private, end-to-end encrypted messaging and voice for individuals, teams, and organisations.
+* This Android client is maintained independently. Cross-client parity is desirable where it serves Seventwos Workspace users, but is not a contribution requirement.
+* Before starting a significant feature, open or find an issue in this repository that explains the use case and intended approach.
   * In case of an existing issue, please comment that you're planning to contribute. If you create a new issue, please specify that in the issue. In such a case we will try to review the issue ASAP and provide you with initial feedback so you can be confident if and at which conditions your contributions will be accepted.
 
 Once we know that you want to contribute and have confirmed that the new feature is overall aligned with the product direction, the designers of the core team will help you with the designs and any other type of guidance when it comes to the user experience. We will try to unblock you as quickly as we can, but it may not be instant. Having a clear understanding of the use case and the impact of the feature will help us with the prioritization and faster responses.
@@ -103,13 +102,9 @@ This project should compile without any special action. Just clone it and open i
 
 ### Strings
 
-The strings of the project are managed externally using [https://localazy.com](https://localazy.com) and shared with Element X iOS.
+The strings of the project are managed externally using [Localazy](https://localazy.com/p/element).
 
-### Element X Android Gallery
-
-Once added to Localazy, translations can be checked screen per screen using our tool Element X Android Gallery, available at https://element-hq.github.io/element-x-android/.
-
-Localazy syncs occur every Monday and the screenshots on this page are generated every Tuesday, so you'll have to wait to see your change appearing on Element X Android Gallery.
+Once added to Localazy, translations can be checked screen by screen in Android Studio previews and screenshot tests.
 
 ### Kotlin
 
@@ -212,7 +207,7 @@ internal fun PinIconPreview() = ElementPreview {
 }
 ```
 
-This will allow to preview the composable in both light and dark mode in Android Studio. This will also automatically add UI tests. The GitHub action [Record screenshots](https://github.com/element-hq/element-x-android/actions/workflows/recordScreenshots.yml) has to be run to record the new screenshots. The PR reviewer can trigger this for you if you're not part of the core team.
+This will allow previewing the composable in both light and dark mode in Android Studio. This will also automatically add UI tests. Run the repository's **Record screenshots** GitHub Action to record new screenshots.
 
 ### Authors
 
