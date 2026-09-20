@@ -59,7 +59,7 @@ jobs:
         env:
           ENTERPRISE_SUBMODULE_DEPLOY_KEY: ${{ secrets.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
         run: |
-          if [ -n "$ENTERPRISE_SUBMODULE_DEPLOY_KEY" ]; then
+          if [ "${{ github.repository }}" = "seventwos-app/usr-workspace-android" ] && [ -n "$ENTERPRISE_SUBMODULE_DEPLOY_KEY" ]; then
             echo "configured=true" >> "$GITHUB_OUTPUT"
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
