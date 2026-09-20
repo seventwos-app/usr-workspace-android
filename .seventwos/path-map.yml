@@ -40,16 +40,26 @@ categories:
       identifiers inherited from upstream that other Matrix/Element
       tooling, the Rust SDK, or upstream documentation may depend on.
       These should generally track upstream, not diverge, unless a
-      recorded invariant says otherwise.
+      recorded invariant says otherwise. Covers both Kotlin and Java
+      source roots, and Gradle build files where `io.element` appears as
+      a content-level groupId/plugin id/namespace rather than a directory
+      path segment.
     evidence:
       - "app/build.gradle.kts: namespace = \"io.element.android.x\" (kept, not rebranded)"
       - "io.element.android-compose-application convention plugin id"
       - "ignoreDependencies(groupId = \"io.element.android\")"
       - "io.element package prefix used throughout appnav/, appconfig/, services/, libraries/"
+      - "libraries/featureflag/test/src/main/java/io/element/android/libraries/featureflag/test (Java source root under io/element, not Kotlin)"
+      - "plugins/src/main/kotlin/io.element.android-compose-application.gradle.kts and sibling io.element.*.gradle.kts convention-plugin files (content-level plugin id, not just directory path)"
+      - "appnav/build.gradle.kts, features/ftue/{impl,test,api}/build.gradle.kts, features/home/impl/build.gradle.kts (content-level io.element groupId/namespace references)"
+      - "settings.gradle.kts present at repo root and plugins/settings.gradle.kts"
     paths:
       - "**/src/*/kotlin/io/element/**"
+      - "**/src/*/java/io/element/**"
       - "app/build.gradle.kts"
       - "plugins/**/*.gradle.kts"
+      - "**/*.gradle.kts"
+      - "**/*.gradle"
 
   product_divergence:
     description: >

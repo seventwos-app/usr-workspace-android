@@ -7,6 +7,15 @@ name: Seventwos upstream assessment
 # See .seventwos/policy.yml (PRINCIPLE-REPORT-ONLY-FOR-NOW).
 #
 # Minimal permissions, SHA-pinned actions, persist-credentials: false.
+#
+# Immutability is enforced strictly: an existing assessment artifact must
+# never be modified, deleted, renamed, copied over, or type-changed (e.g.
+# turned into a symlink); only brand-new regular files are accepted. Base
+# resolution is fail-closed - a `git diff`/`git show` failure aborts the
+# run rather than being swallowed, since silently treating an error as
+# "no immutability violation" would defeat the point of this check.
+# assessments/README.md is documentation, not an artifact, and remains
+# editable.
 
 on:
   pull_request:
@@ -39,6 +48,18 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Resolve exact PR base SHA
+        id: base
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          if ! git rev-parse --verify "${base}^{commit}" > /dev/null 2>&1; then
+            echo "::error::Cannot resolve PR base sha '$base' as a commit object; failing closed (not treated as 'no prior artifacts')." >&2
+            exit 1
+          fi
+          echo "sha=$base" >> "$GITHUB_OUTPUT"
+
       - name: Determine changed/target assessment files
         id: files
         run: |
@@ -55,31 +76,49 @@ jobs:
             fi
             printf '%s\n' "$path" > changed_files.txt
           else
-            base="${{ github.event.pull_request.base.sha }}"
+            base="${{ steps.base.outputs.sha }}"
             head="${{ github.event.pull_request.head.sha }}"
-            git diff --name-only --diff-filter=AM "$base" "$head" -- '.seventwos/assessments/**' > changed_files.txt || true
+            # --find-renames/--find-copies so a rename/copy of an existing
+            # artifact is reported with its real status (R/C), not hidden
+            # behind a plain A/D pair.
+            git diff --name-status --find-renames --find-copies "$base" "$head" \
+              -- '.seventwos/assessments/**' ':!.seventwos/assessments/README.md' \
+              > changed_status.txt
+            awk '$1 == "A" { print $NF }' changed_status.txt > changed_files.txt
           fi
           echo "count=$(wc -l < changed_files.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
           cat changed_files.txt
 
-      - name: Reject modification of existing assessment artifacts
+      - name: Reject any mutation of existing assessment artifacts
         if: github.event_name == 'pull_request'
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha }}"
-          head="${{ github.event.pull_request.head.sha }}"
-          modified=$(git diff --name-only --diff-filter=M "$base" "$head" -- '.seventwos/assessments/**' || true)
-          if [ -n "$modified" ]; then
-            echo "::error::Assessment artifacts are immutable. These existing files were modified instead of adding a new file:"
-            echo "$modified"
+          # Anything other than a clean "Added" (A) is a mutation of an
+          # existing immutable artifact: Modified, Deleted, Renamed, Copied,
+          # or Type-changed (e.g. replaced by a symlink) all count.
+          disallowed=$(awk '$1 !~ /^A$/ { print }' changed_status.txt || true)
+          if [ -n "$disallowed" ]; then
+            echo "::error::Assessment artifacts are immutable. Only adding new regular files is allowed; the following changes are rejected (status code shown first):"
+            echo "$disallowed"
             exit 1
           fi
-          removed=$(git diff --name-only --diff-filter=D "$base" "$head" -- '.seventwos/assessments/**' || true)
-          if [ -n "$removed" ]; then
-            echo "::error::Assessment artifacts are immutable. These existing files were deleted:"
-            echo "$removed"
-            exit 1
-          fi
+
+      - name: Verify newly added artifacts are regular files
+        if: steps.files.outputs.count != '0'
+        run: |
+          set -euo pipefail
+          head="${{ github.event.pull_request.head.sha || github.sha }}"
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            mode=$(git ls-tree "$head" -- "$f" | awk '{print $1}')
+            case "$mode" in
+              100644|100755) ;;
+              *)
+                echo "::error::$f has git file mode '$mode'; only regular files (100644/100755) are accepted as assessment artifacts, not symlinks or gitlinks." >&2
+                exit 1
+                ;;
+            esac
+          done < changed_files.txt
 
       - name: Stage artifacts for archival
         if: steps.files.outputs.count != '0'

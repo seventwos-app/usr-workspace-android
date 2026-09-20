@@ -2,11 +2,19 @@ name: Seventwos policy validate
 
 # Validates the repository-owned .seventwos upstream-sync policy system
 # (policy.yml, state.yml, path-map.yml, invariants.yml, ledger.jsonl) and its
-# validator's own unit tests. Scoped to .seventwos/** and the validator
-# script so it does not run on unrelated changes, and deliberately uses only
-# GitHub-owned actions so it is unaffected by this repository's
-# org/enterprise-enforced third-party-actions allow-list
+# validator's own unit tests. Scoped to .seventwos/**, the validator script,
+# and both seventwos-owned workflow files, so it does not run on unrelated
+# changes. Deliberately uses only GitHub-owned actions so it is unaffected
+# by this repository's org/enterprise-enforced third-party-actions allow-list
 # (see .seventwos/ledger.jsonl, LEDGER-0002/LEDGER-0003).
+#
+# Uses the exact event base SHA (not a moving branch ref) to check the
+# immutable state.yml seed, ledger append-only-ness, and anti-weakening
+# protection for invariants.yml/policy.yml/path-map.yml. On push, the very
+# first push to a new branch reports an all-zeros "before" SHA; in that case
+# there is no meaningful base to diff against, so base-ref checks are
+# skipped for that run only (not silently skipped in general - see
+# validate_seventwos.py, which fails closed on any other unresolvable ref).
 
 on:
   pull_request:
@@ -14,12 +22,15 @@ on:
       - ".seventwos/**"
       - "scripts/seventwos/**"
       - ".github/workflows/seventwos-policy-validate.yml"
+      - ".github/workflows/seventwos-upstream-assessment.yml"
   push:
     branches: [ main, develop ]
     paths:
       - ".seventwos/**"
       - "scripts/seventwos/**"
       - ".github/workflows/seventwos-policy-validate.yml"
+      - ".github/workflows/seventwos-upstream-assessment.yml"
+  merge_group:
 
 permissions:
   contents: read
@@ -45,11 +56,48 @@ jobs:
       - name: Validator unit tests
         run: python3 -m unittest scripts/seventwos/validate_seventwos_test.py -v
 
-      - name: Validate .seventwos policy system
+      - name: Resolve exact event base SHA
+        id: base_sha
         run: |
-          BASE_REF="${{ github.event_name == 'pull_request' && format('origin/{0}', github.event.pull_request.base.ref) || '' }}"
-          if [ -n "$BASE_REF" ]; then
-            python3 scripts/seventwos/validate_seventwos.py --base-ref "$BASE_REF"
+          set -euo pipefail
+          case "${{ github.event_name }}" in
+            pull_request)
+              BASE_SHA="${{ github.event.pull_request.base.sha }}"
+              ;;
+            merge_group)
+              BASE_SHA="${{ github.event.merge_group.base_sha }}"
+              ;;
+            push)
+              BASE_SHA="${{ github.event.before }}"
+              if [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+                echo "First push to a new branch: no prior base to diff against." >&2
+                BASE_SHA=""
+              fi
+              ;;
+            *)
+              BASE_SHA=""
+              ;;
+          esac
+          echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch upstream objects referenced by the immutable seed
+        # Public, unauthenticated fetch of element-hq/element-x-android:
+        # required so --verify-git-identity can confirm the seed's recorded
+        # upstream/merge-base SHAs are real, reachable commit objects and
+        # recompute the merge-base, without relying on any secret or the
+        # private enterprise submodule.
+        run: |
+          set -euo pipefail
+          git remote add seventwos-upstream-verify https://github.com/element-hq/element-x-android.git
+          git fetch --no-tags seventwos-upstream-verify develop
+
+      - name: Validate .seventwos policy system
+        env:
+          BASE_SHA: ${{ steps.base_sha.outputs.base_sha }}
+        run: |
+          set -euo pipefail
+          if [ -n "$BASE_SHA" ]; then
+            python3 scripts/seventwos/validate_seventwos.py --base-ref "$BASE_SHA" --verify-git-identity
           else
-            python3 scripts/seventwos/validate_seventwos.py
+            python3 scripts/seventwos/validate_seventwos.py --verify-git-identity
           fi
