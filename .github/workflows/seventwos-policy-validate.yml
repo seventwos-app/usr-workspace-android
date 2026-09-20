@@ -1,0 +1,55 @@
+name: Seventwos policy validate
+
+# Validates the repository-owned .seventwos upstream-sync policy system
+# (policy.yml, state.yml, path-map.yml, invariants.yml, ledger.jsonl) and its
+# validator's own unit tests. Scoped to .seventwos/** and the validator
+# script so it does not run on unrelated changes, and deliberately uses only
+# GitHub-owned actions so it is unaffected by this repository's
+# org/enterprise-enforced third-party-actions allow-list
+# (see .seventwos/ledger.jsonl, LEDGER-0002/LEDGER-0003).
+
+on:
+  pull_request:
+    paths:
+      - ".seventwos/**"
+      - "scripts/seventwos/**"
+      - ".github/workflows/seventwos-policy-validate.yml"
+  push:
+    branches: [ main, develop ]
+    paths:
+      - ".seventwos/**"
+      - "scripts/seventwos/**"
+      - ".github/workflows/seventwos-policy-validate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  seventwos-policy-validate:
+    name: seventwos-policy-validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.x"
+
+      - name: Install validator dependencies
+        run: python3 -m pip install --disable-pip-version-check --quiet pyyaml
+
+      - name: Validator unit tests
+        run: python3 -m unittest scripts/seventwos/validate_seventwos_test.py -v
+
+      - name: Validate .seventwos policy system
+        run: |
+          BASE_REF="${{ github.event_name == 'pull_request' && format('origin/{0}', github.event.pull_request.base.ref) || '' }}"
+          if [ -n "$BASE_REF" ]; then
+            python3 scripts/seventwos/validate_seventwos.py --base-ref "$BASE_REF"
+          else
+            python3 scripts/seventwos/validate_seventwos.py
+          fi

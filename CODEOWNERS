@@ -1,1 +1,38 @@
+# Default owner for everything not covered more specifically below.
 * @a-tcp
+
+# --- Seventwos upstream-sync policy system ---
+# Policy/state/invariants for tracking divergence from
+# element-hq/element-x-android. See .seventwos/README.md.
+/.seventwos/ @a-tcp
+/scripts/seventwos/ @a-tcp
+
+# --- CI / repository automation ---
+# Workflow changes are frequently the source of the org/enterprise
+# actions-allow-list startup_failure documented in
+# .seventwos/ledger.jsonl (LEDGER-0002/LEDGER-0003); route through the
+# same owner as the policy system so both are reviewed together.
+/.github/workflows/ @a-tcp
+/CODEOWNERS @a-tcp
+
+# --- UI / product (Seventwos branding + product divergence, see
+# .seventwos/path-map.yml categories `branding` and `product_divergence`) ---
+/plugins/src/main/kotlin/config/BuildTimeConfig.kt @a-tcp
+/appconfig/ @a-tcp
+/app/src/main/kotlin/io/element/android/x/ @a-tcp
+/appicon/ @a-tcp
+/appnav/src/main/kotlin/io/element/android/appnav/intent/ @a-tcp
+
+# --- Security / storage (see .seventwos/path-map.yml category
+# `security_storage`) ---
+/app/signature/ @a-tcp
+/libraries/cryptography/ @a-tcp
+/libraries/session-storage/ @a-tcp
+/libraries/cachestore/ @a-tcp
+/libraries/encrypted-db/ @a-tcp
+
+# --- Release-sensitive (see .seventwos/path-map.yml category
+# `release_sensitive`) ---
+/.github/workflows/release.yml @a-tcp
+/fastlane/ @a-tcp
+/app/build.gradle.kts @a-tcp

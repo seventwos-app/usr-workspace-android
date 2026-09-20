@@ -1,0 +1,127 @@
+# .seventwos/path-map.yml
+#
+# Categorizes repository paths by *why* they matter for upstream sync, not
+# by blanket inclusion/exclusion. A path may appear in more than one
+# category (e.g. a file can carry both branding strings and a
+# compatibility-sensitive package declaration). Deliberately avoids
+# "never touch app/**"-style broad excludes: categorization is at the
+# file/identifier level so legitimate upstream fixes inside a divergent
+# file are not blanket-blocked.
+#
+# Evidence for every entry below was directly observed in this checkout
+# (grep/view), not assumed.
+
+schema_version: 1
+
+categories:
+  branding:
+    description: >
+      Seventwos product identity: app name, application ID, URLs, and
+      environment-driven service configuration. Safe and expected to differ
+      from upstream; upstream changes to *sibling* logic in the same file
+      still need manual review.
+    evidence:
+      - "plugins/src/main/kotlin/config/BuildTimeConfig.kt: APPLICATION_ID = \"org.seventwos.workspace\", APPLICATION_NAME, URL_WEBSITE, SEVENTWOS_* env-driven service config"
+      - "appconfig/src/main/kotlin/io/element/android/appconfig/ApplicationConfig.kt: PRODUCTION_APPLICATION_NAME/DESKTOP_APPLICATION_NAME = \"Seventwos Workspace\""
+      - "app/src/main/kotlin/io/element/android/x/SeventwosWorkspaceApplication.kt"
+      - "app/src/main/res/values*/themes.xml, app/src/main/AndroidManifest.xml (branding-scoped resources)"
+      - "appicon/enterprise, appicon/default"
+      - "fastlane/** (store listing metadata)"
+    paths:
+      - "plugins/src/main/kotlin/config/BuildTimeConfig.kt"
+      - "appconfig/src/main/kotlin/io/element/android/appconfig/ApplicationConfig.kt"
+      - "app/src/main/kotlin/io/element/android/x/SeventwosWorkspaceApplication.kt"
+      - "appicon/**"
+      - "fastlane/**"
+
+  compatibility_sensitive_identifier:
+    description: >
+      Package namespaces, application/SDK identifiers, and code
+      identifiers inherited from upstream that other Matrix/Element
+      tooling, the Rust SDK, or upstream documentation may depend on.
+      These should generally track upstream, not diverge, unless a
+      recorded invariant says otherwise.
+    evidence:
+      - "app/build.gradle.kts: namespace = \"io.element.android.x\" (kept, not rebranded)"
+      - "io.element.android-compose-application convention plugin id"
+      - "ignoreDependencies(groupId = \"io.element.android\")"
+      - "io.element package prefix used throughout appnav/, appconfig/, services/, libraries/"
+    paths:
+      - "**/src/*/kotlin/io/element/**"
+      - "app/build.gradle.kts"
+      - "plugins/**/*.gradle.kts"
+
+  product_divergence:
+    description: >
+      Intentional Seventwos UI/product behavior differences from upstream
+      Element X (beyond pure branding). Distinct from branding because
+      these are functional/UX decisions, not just names/strings.
+    evidence:
+      - "app/src/main/kotlin/io/element/android/x/di/AppBindingContainer.kt, ApplicationBindings.kt (custom bindings)"
+      - "app/src/main/kotlin/io/element/android/x/initializer/PlatformInitializer.kt"
+      - "appnav/src/main/kotlin/io/element/android/appnav/intent/IntentResolver.kt"
+    paths:
+      - "app/src/main/kotlin/io/element/android/x/di/**"
+      - "app/src/main/kotlin/io/element/android/x/initializer/**"
+      - "appnav/src/main/kotlin/io/element/android/appnav/intent/**"
+
+  security_storage:
+    description: >
+      Crypto, secure storage, and signing-adjacent code. Never weakened by
+      an upstream sync without explicit security review, regardless of
+      whether the change looks like a pure refactor upstream.
+    evidence:
+      - "app/signature/debug.keystore present under app/signature/"
+      - "libraries/cryptography/** (crypto primitives) observed under libraries/"
+      - "libraries/session-storage/** and libraries/cachestore/** (encrypted session/cache storage) observed under libraries/"
+      - "libraries/encrypted-db/** observed under libraries/"
+    paths:
+      - "app/signature/**"
+      - "libraries/cryptography/**"
+      - "libraries/session-storage/**"
+      - "libraries/cachestore/**"
+      - "libraries/encrypted-db/**"
+
+  release_sensitive:
+    description: >
+      Release, signing, and distribution configuration. Changes here need
+      release-owner review independent of general code review.
+    evidence:
+      - ".github/workflows/release.yml"
+      - "fastlane/** (store submission)"
+      - "app/build.gradle.kts release signing/build-type blocks"
+    paths:
+      - ".github/workflows/release.yml"
+      - "fastlane/**"
+      - "app/build.gradle.kts"
+
+  ci_infrastructure:
+    description: >
+      Continuous integration and repository automation. Not application
+      behavior, but gates all of the above; tracked separately so CI
+      changes get workflow/infra review rather than product review.
+    evidence:
+      - ".github/workflows/* (14 workflows observed at seed time)"
+      - "Repository-level Actions allowed-actions policy is enforced at the org/enterprise level (see .seventwos/ledger.jsonl seed entry)"
+    paths:
+      - ".github/workflows/**"
+      - ".github/CODEOWNERS"
+      - "CODEOWNERS"
+
+  seventwos_policy_system:
+    description: >
+      This policy system itself. Self-referential on purpose: changes to
+      policy/state/invariants are exactly the kind of change that needs
+      the same rigor as the things it governs.
+    paths:
+      - ".seventwos/**"
+      - "scripts/seventwos/**"
+
+  out_of_scope:
+    description: >
+      Explicitly out of scope for this policy system. Not analyzed,
+      not read, not assumed to be in sync or out of sync with anything.
+    evidence:
+      - "enterprise/ is a git submodule (.gitmodules -> git@github.com:element-hq/element-android-enterprise.git) that is unpopulated in this checkout"
+    paths:
+      - "enterprise/**"
