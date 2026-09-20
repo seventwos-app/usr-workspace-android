@@ -18,6 +18,8 @@ jobs:
   checkScript:
     name: Search for forbidden patterns
     runs-on: ubuntu-latest
+    env:
+      ENTERPRISE_SUBMODULE_DEPLOY_KEY: ${{ secrets.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
     steps:
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
@@ -38,12 +40,15 @@ jobs:
           persist-credentials: false
       - name: Add SSH private keys for submodule repositories
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY != '' }}
         with:
-          ssh-private-key: ${{ secrets.ELEMENT_ENTERPRISE_DEPLOY_KEY }}
+          ssh-private-key: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
       - name: Clone submodules
-        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY != '' }}
         run: git submodule update --init --recursive
+      - name: ℹ️ Report skipped submodule clone
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY == '' }}
+        run: echo "::notice::Skipping enterprise submodule clone because ENTERPRISE_SUBMODULE_DEPLOY_KEY is not configured."
       - name: Run code quality check suite
         run: ./tools/check/check_code_quality.sh
 
@@ -88,6 +93,8 @@ jobs:
   konsist:
     name: Konsist tests
     runs-on: ubuntu-latest
+    env:
+      ENTERPRISE_SUBMODULE_DEPLOY_KEY: ${{ secrets.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
     # Allow all jobs on main and develop. Just one per PR.
     concurrency:
       group: ${{ github.ref == 'refs/heads/main' && format('check-konsist-main-{0}', github.sha) || github.ref == 'refs/heads/develop' && format('check-konsist-develop-{0}', github.sha) || format('check-konsist-{0}', github.ref) }}
@@ -101,12 +108,15 @@ jobs:
           persist-credentials: false
       - name: Add SSH private keys for submodule repositories
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY != '' }}
         with:
-          ssh-private-key: ${{ secrets.ELEMENT_ENTERPRISE_DEPLOY_KEY }}
+          ssh-private-key: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
       - name: Clone submodules
-        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY != '' }}
         run: git submodule update --init --recursive
+      - name: ℹ️ Report skipped submodule clone
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY == '' }}
+        run: echo "::notice::Skipping enterprise submodule clone because ENTERPRISE_SUBMODULE_DEPLOY_KEY is not configured."
       - name: Use JDK 21
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
@@ -129,6 +139,8 @@ jobs:
   compose:
     name: Compose tests
     runs-on: ubuntu-latest
+    env:
+      ENTERPRISE_SUBMODULE_DEPLOY_KEY: ${{ secrets.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
     # Allow all jobs on main and develop. Just one per PR.
     concurrency:
       group: ${{ github.ref == 'refs/heads/main' && format('check-compose-main-{0}', github.sha) || github.ref == 'refs/heads/develop' && format('check-compose-develop-{0}', github.sha) || format('check-compose-{0}', github.ref) }}
@@ -142,12 +154,15 @@ jobs:
           persist-credentials: false
       - name: Add SSH private keys for submodule repositories
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY != '' }}
         with:
-          ssh-private-key: ${{ secrets.ELEMENT_ENTERPRISE_DEPLOY_KEY }}
+          ssh-private-key: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
       - name: Clone submodules
-        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY != '' }}
         run: git submodule update --init --recursive
+      - name: ℹ️ Report skipped submodule clone
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY == '' }}
+        run: echo "::notice::Skipping enterprise submodule clone because ENTERPRISE_SUBMODULE_DEPLOY_KEY is not configured."
       - name: Use JDK 21
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
@@ -163,6 +178,8 @@ jobs:
   lint:
     name: Android lint check
     runs-on: ubuntu-latest
+    env:
+      ENTERPRISE_SUBMODULE_DEPLOY_KEY: ${{ secrets.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
     # Allow all jobs on main and develop. Just one per PR.
     concurrency:
       group: ${{ github.ref == 'refs/heads/main' && format('check-lint-main-{0}', github.sha) || github.ref == 'refs/heads/develop' && format('check-lint-develop-{0}', github.sha) || format('check-lint-{0}', github.ref) }}
@@ -176,12 +193,15 @@ jobs:
           persist-credentials: false
       - name: Add SSH private keys for submodule repositories
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY != '' }}
         with:
-          ssh-private-key: ${{ secrets.ELEMENT_ENTERPRISE_DEPLOY_KEY }}
+          ssh-private-key: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
       - name: Clone submodules
-        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY != '' }}
         run: git submodule update --init --recursive
+      - name: ℹ️ Report skipped submodule clone
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY == '' }}
+        run: echo "::notice::Skipping enterprise submodule clone because ENTERPRISE_SUBMODULE_DEPLOY_KEY is not configured."
       - name: Use JDK 21
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
@@ -208,6 +228,8 @@ jobs:
   detekt:
     name: Detekt checks
     runs-on: ubuntu-latest
+    env:
+      ENTERPRISE_SUBMODULE_DEPLOY_KEY: ${{ secrets.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
     # Allow all jobs on main and develop. Just one per PR.
     concurrency:
       group: ${{ github.ref == 'refs/heads/main' && format('check-detekt-main-{0}', github.sha) || github.ref == 'refs/heads/develop' && format('check-detekt-develop-{0}', github.sha) || format('check-detekt-{0}', github.ref) }}
@@ -221,12 +243,15 @@ jobs:
           persist-credentials: false
       - name: Add SSH private keys for submodule repositories
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY != '' }}
         with:
-          ssh-private-key: ${{ secrets.ELEMENT_ENTERPRISE_DEPLOY_KEY }}
+          ssh-private-key: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
       - name: Clone submodules
-        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY != '' }}
         run: git submodule update --init --recursive
+      - name: ℹ️ Report skipped submodule clone
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY == '' }}
+        run: echo "::notice::Skipping enterprise submodule clone because ENTERPRISE_SUBMODULE_DEPLOY_KEY is not configured."
       - name: Use JDK 21
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
@@ -249,6 +274,8 @@ jobs:
   ktlint:
     name: Ktlint checks
     runs-on: ubuntu-latest
+    env:
+      ENTERPRISE_SUBMODULE_DEPLOY_KEY: ${{ secrets.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
     # Allow all jobs on main and develop. Just one per PR.
     concurrency:
       group: ${{ github.ref == 'refs/heads/main' && format('check-ktlint-main-{0}', github.sha) || github.ref == 'refs/heads/develop' && format('check-ktlint-develop-{0}', github.sha) || format('check-ktlint-{0}', github.ref) }}
@@ -262,12 +289,15 @@ jobs:
           persist-credentials: false
       - name: Add SSH private keys for submodule repositories
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY != '' }}
         with:
-          ssh-private-key: ${{ secrets.ELEMENT_ENTERPRISE_DEPLOY_KEY }}
+          ssh-private-key: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
       - name: Clone submodules
-        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY != '' }}
         run: git submodule update --init --recursive
+      - name: ℹ️ Report skipped submodule clone
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY == '' }}
+        run: echo "::notice::Skipping enterprise submodule clone because ENTERPRISE_SUBMODULE_DEPLOY_KEY is not configured."
       - name: Use JDK 21
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
@@ -290,6 +320,8 @@ jobs:
   docs:
     name: Doc checks
     runs-on: ubuntu-latest
+    env:
+      ENTERPRISE_SUBMODULE_DEPLOY_KEY: ${{ secrets.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
     # Allow all jobs on main and develop. Just one per PR.
     concurrency:
       group: ${{ github.ref == 'refs/heads/main' && format('check-docs-main-{0}', github.sha) || github.ref == 'refs/heads/develop' && format('check-docs-develop-{0}', github.sha) || format('check-docs-{0}', github.ref) }}
@@ -303,12 +335,15 @@ jobs:
           persist-credentials: false
       - name: Add SSH private keys for submodule repositories
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY != '' }}
         with:
-          ssh-private-key: ${{ secrets.ELEMENT_ENTERPRISE_DEPLOY_KEY }}
+          ssh-private-key: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
       - name: Clone submodules
-        if: ${{ github.repository == 'element-hq/element-x-android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY != '' }}
         run: git submodule update --init --recursive
+      - name: ℹ️ Report skipped submodule clone
+        if: ${{ env.ENTERPRISE_SUBMODULE_DEPLOY_KEY == '' }}
+        run: echo "::notice::Skipping enterprise submodule clone because ENTERPRISE_SUBMODULE_DEPLOY_KEY is not configured."
       - name: Run docs check
         # This is equivalent to `./gradlew checkDocs`, but we avoid having to install java and gradle
         run: python3 ./tools/docs/generate_toc.py --verify ./*.md docs/**/*.md
