@@ -18,6 +18,8 @@ jobs:
   tests:
     name: Runs unit tests
     runs-on: ubuntu-latest
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     # Allow all jobs on main and develop. Just one per PR.
     concurrency:
@@ -117,9 +119,14 @@ jobs:
 
       # https://github.com/codecov/codecov-action
       - name: ☂️ Upload coverage reports to codecov
+        if: ${{ env.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ env.CODECOV_TOKEN }}
           files: build/reports/kover/reportMerged.xml
           verbose: true
+
+      - name: ℹ️ Report skipped Codecov upload
+        if: ${{ env.CODECOV_TOKEN == '' }}
+        run: echo "::notice::Skipping Codecov upload because CODECOV_TOKEN is not configured."
