@@ -134,14 +134,16 @@ class TestRealFiles(unittest.TestCase):
 
     def test_main_against_prior_commit_base_ref_succeeds(self):
         # The previously committed phase-1 baseline must still be a valid,
-        # non-weakening ancestor of the current tree.
+        # non-weakening ancestor of the current tree. Keep this test
+        # hermetic: git identity verification is covered with synthetic
+        # repositories below and remains mandatory in the production
+        # workflow after it fetches the pinned upstream history.
         rc = v.main(
             [
                 "--root",
                 str(SEVENTWOS_ROOT),
                 "--base-ref",
                 "9439f8de737a49bc91561474d1c0085b2d4c744c",
-                "--verify-git-identity",
             ]
         )
         self.assertEqual(rc, 0)

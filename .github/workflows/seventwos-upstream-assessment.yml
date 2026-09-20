@@ -51,9 +51,11 @@ jobs:
       - name: Resolve exact PR base SHA
         id: base
         if: github.event_name == 'pull_request'
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha }}"
+          base="$PR_BASE_SHA"
           if ! git rev-parse --verify "${base}^{commit}" > /dev/null 2>&1; then
             echo "::error::Cannot resolve PR base sha '$base' as a commit object; failing closed (not treated as 'no prior artifacts')." >&2
             exit 1
@@ -62,10 +64,15 @@ jobs:
 
       - name: Determine changed/target assessment files
         id: files
+        env:
+          ARTIFACT_PATH: ${{ inputs.artifact_path }}
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ steps.base.outputs.sha }}
         run: |
           set -euo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            path="${{ inputs.artifact_path }}"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            path="$ARTIFACT_PATH"
             case "$path" in
               .seventwos/assessments/*) ;;
               *) echo "error: artifact_path must be under .seventwos/assessments/" >&2; exit 1 ;;
@@ -76,12 +83,10 @@ jobs:
             fi
             printf '%s\n' "$path" > changed_files.txt
           else
-            base="${{ steps.base.outputs.sha }}"
-            head="${{ github.event.pull_request.head.sha }}"
             # --find-renames/--find-copies so a rename/copy of an existing
             # artifact is reported with its real status (R/C), not hidden
             # behind a plain A/D pair.
-            git diff --name-status --find-renames --find-copies "$base" "$head" \
+            git diff --name-status --find-renames --find-copies "$PR_BASE_SHA" "$HEAD_SHA" \
               -- '.seventwos/assessments/**' ':!.seventwos/assessments/README.md' \
               > changed_status.txt
             awk '$1 == "A" { print $NF }' changed_status.txt > changed_files.txt
@@ -105,12 +110,13 @@ jobs:
 
       - name: Verify newly added artifacts are regular files
         if: steps.files.outputs.count != '0'
+        env:
+          CHECKED_OUT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          head="${{ github.event.pull_request.head.sha || github.sha }}"
           while IFS= read -r f; do
             [ -z "$f" ] && continue
-            mode=$(git ls-tree "$head" -- "$f" | awk '{print $1}')
+            mode=$(git ls-tree "$CHECKED_OUT_SHA" -- "$f" | awk '{print $1}')
             case "$mode" in
               100644|100755) ;;
               *)
