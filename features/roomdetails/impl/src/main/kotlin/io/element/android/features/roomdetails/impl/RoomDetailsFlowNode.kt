@@ -454,7 +454,7 @@ class RoomDetailsFlowNode(
                             backstack.pop()
                         }
 
-                        override fun learnMoreUrl() = LearnMoreConfig.ENCRYPTION_URL
+                        override fun learnMoreUrl(): String? = LearnMoreConfig.ENCRYPTION_URL
 
                         override fun navigateToLearnMoreAboutEncryption() {
                             learnMoreUrl.value = LearnMoreConfig.ENCRYPTION_URL
