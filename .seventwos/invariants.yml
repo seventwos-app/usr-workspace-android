@@ -1,0 +1,127 @@
+# .seventwos/invariants.yml
+#
+# Behavioral invariants that must hold true regardless of any upstream
+# sync. These are checkable claims about identity, endpoints, telemetry,
+# and known protected changes — not path exclusions. An upstream sync that
+# would violate one of these must be adapted, not silently applied.
+#
+# Additive file: removing or weakening an existing invariant requires
+# explicit review and a ledger.jsonl entry explaining why.
+
+schema_version: 1
+
+invariants:
+  - id: INV-IDENTITY-001
+    category: identity
+    statement: >
+      The Android application ID served to end users is
+      "org.seventwos.workspace" (BuildTimeConfig.APPLICATION_ID), not
+      "io.element.android.x" (the upstream namespace).
+    evidence: "plugins/src/main/kotlin/config/BuildTimeConfig.kt"
+    upstream_sync_guidance: >
+      Upstream changes to APPLICATION_ID/applicationId assignment logic in
+      app/build.gradle.kts must be reviewed manually; the Seventwos value
+      must not be silently overwritten by a merge/rebase.
+
+  - id: INV-IDENTITY-002
+    category: identity
+    statement: >
+      The upstream Kotlin/Java package namespace "io.element.android.*" is
+      preserved as-is (not rebranded) to stay compatible with upstream
+      code layout, tooling, and dependency exclusions
+      (ignoreDependencies(groupId = "io.element.android")).
+    evidence: "app/build.gradle.kts namespace declaration and dependency exclusion"
+    upstream_sync_guidance: >
+      Do not rename this namespace during a sync merge; upstream commits
+      that add new io.element.android packages should be accepted as-is.
+
+  - id: INV-IDENTITY-003
+    category: identity
+    statement: >
+      User-facing product names (APPLICATION_NAME, PRODUCTION_APPLICATION_NAME,
+      DESKTOP_APPLICATION_NAME) resolve to "Seventwos Workspace", not
+      upstream's "Element X" branding.
+    evidence: "appconfig/src/main/kotlin/io/element/android/appconfig/ApplicationConfig.kt, plugins/src/main/kotlin/config/BuildTimeConfig.kt"
+    upstream_sync_guidance: >
+      Upstream string/resource changes should be merged for their
+      *content* (e.g. new UI copy) but must not reintroduce hardcoded
+      "Element" branding into these specific constants.
+
+  - id: INV-ENDPOINT-001
+    category: endpoints
+    statement: >
+      Push gateway, analytics, and crash-reporting endpoints (Firebase
+      push gateway, UnifiedPush gateway/distributor URL, Sentry DSNs,
+      PostHog host) are sourced exclusively from SEVENTWOS_ANDROID_*
+      environment variables at build time, never hardcoded upstream
+      defaults.
+    evidence: "plugins/src/main/kotlin/config/BuildTimeConfig.kt (SERVICES_POSTHOG_*, SERVICES_SENTRY_DSN*, FIREBASE_PUSH_GATEWAY, UNIFIED_PUSH_*, PUSHER_APP_ID_*)"
+    upstream_sync_guidance: >
+      If upstream adds a new telemetry/push endpoint, it must be wired
+      through a new SEVENTWOS_ANDROID_* environment variable following
+      the same pattern, not a literal URL/host in source.
+
+  - id: INV-ENDPOINT-002
+    category: endpoints
+    statement: >
+      Map tiles (MapTiler) and legal/policy URLs (website, privacy,
+      acceptable use, copyright, logo) are Seventwos-controlled
+      configuration points (currently null/placeholder pending real
+      values), not upstream Element URLs.
+    evidence: "plugins/src/main/kotlin/config/BuildTimeConfig.kt (URL_WEBSITE, URL_PRIVACY, URL_ACCEPTABLE_USE, URL_COPYRIGHT, URL_LOGO, SERVICES_MAPTILER_*)"
+    upstream_sync_guidance: >
+      A sync must not repopulate these with upstream's element.io/Element
+      URLs; leave null/placeholder or set to Seventwos-owned values only.
+
+  - id: INV-TELEMETRY-001
+    category: telemetry
+    statement: >
+      Firebase and UnifiedPush push channels are only enabled when the
+      corresponding SEVENTWOS_ANDROID_ENABLE_* flag AND the required
+      gateway/app-id configuration are all present
+      (PUSH_CONFIG_INCLUDE_FIREBASE / PUSH_CONFIG_INCLUDE_UNIFIED_PUSH).
+    evidence: "plugins/src/main/kotlin/config/BuildTimeConfig.kt"
+    upstream_sync_guidance: >
+      Preserve this fail-closed gating (all conditions required, default
+      false) when merging upstream changes to push configuration.
+
+  - id: INV-PROTECTED-001
+    category: protected_change
+    statement: >
+      Frozen classes are declared explicitly in
+      .github/workflows/pr-checks.yml (FROZEN_CLASSES list); at seed time
+      this list is empty, meaning no class is currently frozen. This
+      invariant records the *mechanism*, not a specific frozen file, so it
+      stays true as the list is populated.
+    evidence: ".github/workflows/pr-checks.yml FROZEN_CLASSES array"
+    upstream_sync_guidance: >
+      A sync must not remove or bypass the FROZEN_CLASSES enforcement
+      step in pr-checks.yml.
+
+  - id: INV-PROTECTED-002
+    category: protected_change
+    statement: >
+      CI Actions execution is restricted to an org/enterprise-level
+      allow-list of third-party Actions (verified independently: repo
+      admin cannot override it via the repo-level selected-actions API,
+      which returns 409 "already set at the organization or enterprise
+      level"). Any workflow change that introduces a new third-party
+      Action not already covered by this allow-list will fail at
+      startup, not at review time.
+    evidence: "gh api repos/seventwos-app/usr-workspace-android/actions/permissions/selected-actions (2026-09-20); gh api -X PUT ... -> 409 Conflict"
+    upstream_sync_guidance: >
+      Before adding/upgrading a third-party Action in any workflow,
+      confirm its owner is already present in the org/enterprise
+      allow-list, or the change will silently produce startup_failure
+      runs indistinguishable from an infra outage.
+
+  - id: INV-SUBMODULE-001
+    category: protected_change
+    statement: >
+      The `enterprise/` git submodule (element-hq/element-android-enterprise)
+      is private and this workspace never checks it out or reads its
+      contents as part of upstream-sync tooling.
+    evidence: ".gitmodules; enterprise/ directory empty in this checkout"
+    upstream_sync_guidance: >
+      Do not add automation that clones, reads, or exposes this
+      submodule's contents as part of upstream assessment/sync tooling.
