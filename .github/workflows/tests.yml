@@ -54,14 +54,27 @@ jobs:
           # Ensure we are building the branch and not the branch after being merged on develop
           # https://github.com/actions/checkout/issues/881
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.ref }}
+      - name: Check enterprise submodule deploy key
+        id: check-enterprise-key
+        env:
+          ENTERPRISE_SUBMODULE_DEPLOY_KEY: ${{ secrets.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
+        run: |
+          if { [ "${{ github.repository }}" = "seventwos-app/usr-workspace-android" ] || [ "${{ github.repository }}" = "element-hq/element-x-android" ]; } && [ -n "$ENTERPRISE_SUBMODULE_DEPLOY_KEY" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Add SSH private keys for submodule repositories
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'seventwos-app/usr-workspace-android' }}
+        if: ${{ steps.check-enterprise-key.outputs.configured == 'true' }}
         with:
           ssh-private-key: ${{ secrets.ENTERPRISE_SUBMODULE_DEPLOY_KEY }}
       - name: Clone submodules
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'seventwos-app/usr-workspace-android' }}
+        if: ${{ steps.check-enterprise-key.outputs.configured == 'true' }}
         run: git submodule update --init --recursive
+      - name: ℹ️ Report skipped submodule clone
+        if: ${{ steps.check-enterprise-key.outputs.configured == 'false' }}
+        run: echo "::notice::Skipping enterprise submodule clone because ENTERPRISE_SUBMODULE_DEPLOY_KEY is not configured."
       - name: ☕️ Use JDK 21
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
@@ -115,11 +128,27 @@ jobs:
           python3 .github/workflows/scripts/parse_test_failures.py . >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
 
+      - name: Check Codecov token
+        id: check-codecov-token
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          if [ -n "$CODECOV_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
       # https://github.com/codecov/codecov-action
       - name: ☂️ Upload coverage reports to codecov
+        if: ${{ steps.check-codecov-token.outputs.configured == 'true' }}
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           files: build/reports/kover/reportMerged.xml
           verbose: true
+
+      - name: ℹ️ Report skipped Codecov upload
+        if: ${{ steps.check-codecov-token.outputs.configured == 'false' }}
+        run: echo "::notice::Skipping Codecov upload because CODECOV_TOKEN is not configured."
