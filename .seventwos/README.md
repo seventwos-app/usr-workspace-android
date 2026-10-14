@@ -38,6 +38,13 @@ python3 -m unittest scripts/seventwos/validate_seventwos_test.py -v
 python3 scripts/seventwos/validate_seventwos.py --base-ref origin/develop
 ```
 
+Both required checks (`seventwos-policy-validate` and
+`intake-assessment-artifact`) run on every pull request and merge group,
+without path filters. They validate against the exact event base SHA.
+Assessment intake still enforces immutability when no artifacts are added;
+it archives nothing in that case and does not generate assessment artifacts.
+Policy validation on pushes to `main`/`develop` remains path-scoped.
+
 ## Explicit non-goals (this change)
 
 * No automatic merge/sync logic of any kind.
