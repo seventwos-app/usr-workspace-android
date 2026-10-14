@@ -39,9 +39,10 @@ jobs:
 
       - name: Remove Record-Screenshots label
         if: github.event.label.name == 'Record-Screenshots'
-        uses: actions-ecosystem/action-remove-labels@2ce5d41b4b6aa8503e285553f75ed56e0a40bae0 # v1.3.0
-        with:
-          labels: Record-Screenshots
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --remove-label Record-Screenshots
       - name: ⏬ Checkout with LFS (PR)
         if: github.event.label.name == 'Record-Screenshots'
         uses: nschloe/action-cached-lfs-checkout@385a8ecc719e50b8c71af6ab01a624b486b7c3bc # v1.2.5
