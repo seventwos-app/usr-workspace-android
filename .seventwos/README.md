@@ -51,7 +51,10 @@ Policy validation on pushes to `main`/`develop` remains path-scoped.
 * No broad path-only exclusions (e.g. "never touch `app/**`") — divergence is
   tracked at the identifier/behavior level so legitimate upstream fixes are
   not blanket-blocked.
-* No changes to Graphify workflows.
+* No coupling of upstream-sync policy validation to Graphify. This PR
+  separately hardens both Graphify workflows with pinned actions, disabled
+  persisted checkout credentials, and explicit GitHub CLI git authentication;
+  those changes do not add upstream-sync policy behavior to Graphify.
 * No access to or assumptions about the `enterprise/` submodule, which is a
   private, unpopulated git submodule in this checkout — its contents are out
   of scope and not read by this tooling.
