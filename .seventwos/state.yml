@@ -1,0 +1,74 @@
+# .seventwos/state.yml
+#
+# IMMUTABLE SEED RECORD. Do not edit these fields in place once merged.
+# This file captures the upstream/fork/merge-base relationship as observed
+# from evidence available in this workspace at seed time. It is intentionally
+# narrow: it records what was directly verifiable, and calls out what could
+# not be verified rather than guessing.
+#
+# To refresh this record after a real sync: append a dated entry to
+# ledger.jsonl describing the new evidence, then open a reviewed PR that
+# updates this file's `superseded_by` field to point at that ledger entry.
+# The `seed` block below must never be changed by that PR.
+
+schema_version: 1
+
+seed:
+  recorded_at: "2026-09-20T12:32:23Z"
+  recorded_by: "copilot-cli (session 0b4946e3-75e1-44d6-9567-460078704cd5)"
+  evidence: >
+    Derived directly from `git remote`, `git fetch upstream`, and
+    `git merge-base` run against this checkout on 2026-09-20. No history was
+    invented; fields left null below were not directly observable from
+    available evidence and must not be assumed.
+
+  fork:
+    origin_remote: "https://github.com/seventwos-app/usr-workspace-android.git"
+    origin_owner: "seventwos-app"
+    default_branch: "develop"
+    is_github_fork_relationship: true
+    github_reported_parent: "element-hq/element-x-android"
+
+  upstream:
+    repo: "element-hq/element-x-android"
+    tracked_branch: "develop"
+    license: "AGPL-3.0-only"
+    head_sha_at_seed: "f8fdfcae5699fb10eab733e6add2169bb736a8e6"
+    head_observed_via: "git fetch upstream develop (2026-09-20)"
+
+  our_branch_at_seed:
+    branch: "develop"
+    head_sha_at_seed: "f6457f0305b00eecf15184195f9d5e9956452d3b"
+    head_observed_via: "git fetch origin develop (2026-09-20); matches GitHub Actions run history for pushes to develop"
+
+  merge_base:
+    sha: "3e861cc64645a286a5455e0b47032b1a25b2f49d"
+    subject: "Do not report detekt LargeClass issues on test classes (#7713)"
+    committed_at: "2026-09-15T13:56:33+02:00"
+    computed_via: "git merge-base origin/develop upstream/develop"
+
+  divergence_at_seed:
+    commits_ours_since_merge_base: 27
+    commits_upstream_since_merge_base: 24
+    note: >
+      Both counts are commit counts, not a measure of conflict risk or file
+      overlap. No attempt has been made here to classify individual upstream
+      commits; that is out of scope for this seed and belongs to a future
+      upstream-assessment artifact under .seventwos/assessments/.
+
+  prior_narrative_record:
+    path: "documentation/upstream-tracking.md"
+    note: >
+      A human-maintained tracking doc already exists and recorded a prior
+      sync point (our HEAD 9bf10fbc4f... vs upstream HEAD 58a00fd4e... on
+      2026-09-17, an 11-commit gap at that time, not yet synced). That
+      recorded pair is an ancestor-consistent earlier snapshot of the same
+      relationship this file now seeds from newer evidence; the two are not
+      contradictory, just recorded at different times. This file does not
+      supersede that document's narrative content, only adds a machine
+      checkable seed alongside it.
+
+  unresolved_uncertainties:
+    - "No signed/tagged 'fork point' commit exists; the fork relationship is inferred from GitHub's reported parent repository and git history shape, not from an explicit marker commit."
+    - "Whether any upstream commits between merge-base and head_sha_at_seed touch files this fork has diverged on (see path-map.yml) has not been assessed here."
+    - "The enterprise/ git submodule (element-hq/element-android-enterprise) is present in .gitmodules but not checked out in this workspace; its sync state relative to any upstream enterprise repo is unknown and out of scope."

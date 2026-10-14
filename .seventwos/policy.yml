@@ -1,0 +1,59 @@
+# .seventwos/policy.yml
+#
+# Principles and process for evaluating upstream changes before they are
+# ever applied. This is process/governance; it defines *how* future
+# assessment and sync work must happen. It does not itself sync anything.
+
+schema_version: 1
+
+principles:
+  - id: PRINCIPLE-NO-INVENT
+    statement: >
+      Never invent upstream intent, fork history, or divergence rationale.
+      Every claim in state.yml/path-map.yml/invariants.yml must cite the
+      evidence it was derived from. Unverifiable claims are recorded as
+      unresolved_uncertainties, not asserted.
+
+  - id: PRINCIPLE-GRANULAR-NOT-BROAD
+    statement: >
+      Divergence tracking is at the identifier/behavior level
+      (path-map.yml categories, invariants.yml statements), not blanket
+      "never touch this directory" rules, so legitimate upstream fixes
+      inside a divergent file are not blanket-blocked.
+
+  - id: PRINCIPLE-APPEND-ONLY-AUDIT
+    statement: >
+      Every state change, assessment, or policy decision is recorded as a
+      new line in ledger.jsonl. Existing ledger lines are never edited or
+      removed; CI enforces this on every pull request.
+
+  - id: PRINCIPLE-REPORT-ONLY-FOR-NOW
+    statement: >
+      Nothing in this initial system applies upstream changes or computes
+      merges. The upstream-assessment workflow only accepts and archives
+      immutable assessment artifacts for later human/agent review.
+
+  - id: PRINCIPLE-NO-WEAKENING
+    statement: >
+      This work must not weaken existing product/security checks (frozen
+      classes, PR checks, CODEOWNERS review requirements) to make CI pass.
+      Where existing checks are broken for infrastructure reasons (see
+      ledger seed entry on CI Actions startup_failure), the fix is to
+      restore them, or clearly document why they cannot yet be restored —
+      never to remove or bypass them.
+
+process:
+  upstream_change_evaluation:
+    - "Fetch upstream develop and compute merge-base against our develop (see state.yml for the seed method)."
+    - "Produce an immutable assessment artifact under .seventwos/assessments/ describing the commits being considered (never edit an existing artifact; add a new one)."
+    - "Cross-check the assessment against path-map.yml categories and invariants.yml; flag any upstream commit touching a compatibility_sensitive_identifier, security_storage, or release_sensitive path, or any commit that would violate a stated invariant."
+    - "Record the outcome as a new ledger.jsonl entry."
+    - "Only after human/maintainer review of the assessment and ledger entry does an actual sync PR get opened — this is out of scope for the current foundation."
+
+  invariant_lifecycle:
+    - "Adding an invariant: append to invariants.yml with evidence and upstream_sync_guidance; record in ledger.jsonl."
+    - "Weakening/removing an invariant: requires explicit maintainer review; record rationale in ledger.jsonl before the change lands."
+
+changelog:
+  - date: "2026-09-20"
+    change: "Initial policy seeded alongside state.yml, path-map.yml, invariants.yml, and ledger.jsonl."

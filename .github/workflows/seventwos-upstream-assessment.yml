@@ -1,0 +1,161 @@
+name: Seventwos upstream assessment
+
+# SCAFFOLD — read-only / report-only. Accepts immutable upstream-assessment
+# artifacts added under .seventwos/assessments/ and archives them as a
+# workflow artifact for later human/agent review. It does NOT evaluate
+# upstream commits, compute merges, apply changes, or open any sync PR.
+# See .seventwos/policy.yml (PRINCIPLE-REPORT-ONLY-FOR-NOW).
+#
+# Minimal permissions, SHA-pinned actions, persist-credentials: false.
+#
+# Immutability is enforced strictly: an existing assessment artifact must
+# never be modified, deleted, renamed, copied over, or type-changed (e.g.
+# turned into a symlink); only brand-new regular files are accepted. Base
+# resolution is fail-closed - a `git diff`/`git show` failure aborts the
+# run rather than being swallowed, since silently treating an error as
+# "no immutability violation" would defeat the point of this check.
+# assessments/README.md is documentation, not an artifact, and remains
+# editable.
+
+on:
+  pull_request:
+    paths:
+      - ".seventwos/assessments/**"
+  workflow_dispatch:
+    inputs:
+      artifact_path:
+        description: >
+          Path (relative to repo root) to an existing, already-committed
+          assessment artifact under .seventwos/assessments/ to archive.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ format('seventwos-upstream-assessment-{0}', github.ref) }}
+  cancel-in-progress: true
+
+jobs:
+  intake:
+    name: intake-assessment-artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve exact PR base SHA
+        id: base
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          base="$PR_BASE_SHA"
+          if ! git rev-parse --verify "${base}^{commit}" > /dev/null 2>&1; then
+            echo "::error::Cannot resolve PR base sha '$base' as a commit object; failing closed (not treated as 'no prior artifacts')." >&2
+            exit 1
+          fi
+          echo "sha=$base" >> "$GITHUB_OUTPUT"
+
+      - name: Determine changed/target assessment files
+        id: files
+        env:
+          ARTIFACT_PATH: ${{ inputs.artifact_path }}
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ steps.base.outputs.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            path="$ARTIFACT_PATH"
+            case "$path" in
+              .seventwos/assessments/*) ;;
+              *) echo "error: artifact_path must be under .seventwos/assessments/" >&2; exit 1 ;;
+            esac
+            if [ ! -f "$path" ]; then
+              echo "error: $path does not exist" >&2
+              exit 1
+            fi
+            printf '%s\n' "$path" > changed_files.txt
+          else
+            # --find-renames/--find-copies so a rename/copy of an existing
+            # artifact is reported with its real status (R/C), not hidden
+            # behind a plain A/D pair.
+            git diff --name-status --find-renames --find-copies "$PR_BASE_SHA" "$HEAD_SHA" \
+              -- '.seventwos/assessments/**' ':!.seventwos/assessments/README.md' \
+              > changed_status.txt
+            awk '$1 == "A" { print $NF }' changed_status.txt > changed_files.txt
+          fi
+          echo "count=$(wc -l < changed_files.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          cat changed_files.txt
+
+      - name: Reject any mutation of existing assessment artifacts
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          # Anything other than a clean "Added" (A) is a mutation of an
+          # existing immutable artifact: Modified, Deleted, Renamed, Copied,
+          # or Type-changed (e.g. replaced by a symlink) all count.
+          disallowed=$(awk '$1 !~ /^A$/ { print }' changed_status.txt || true)
+          if [ -n "$disallowed" ]; then
+            echo "::error::Assessment artifacts are immutable. Only adding new regular files is allowed; the following changes are rejected (status code shown first):"
+            echo "$disallowed"
+            exit 1
+          fi
+
+      - name: Verify newly added artifacts are regular files
+        if: steps.files.outputs.count != '0'
+        env:
+          CHECKED_OUT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            mode=$(git ls-tree "$CHECKED_OUT_SHA" -- "$f" | awk '{print $1}')
+            case "$mode" in
+              100644|100755) ;;
+              *)
+                echo "::error::$f has git file mode '$mode'; only regular files (100644/100755) are accepted as assessment artifacts, not symlinks or gitlinks." >&2
+                exit 1
+                ;;
+            esac
+          done < changed_files.txt
+
+      - name: Stage artifacts for archival
+        if: steps.files.outputs.count != '0'
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/seventwos-assessment-intake
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            mkdir -p "/tmp/seventwos-assessment-intake/$(dirname "$f")"
+            cp "$f" "/tmp/seventwos-assessment-intake/$f"
+          done < changed_files.txt
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: steps.files.outputs.count != '0'
+        with:
+          name: seventwos-upstream-assessment-intake
+          path: /tmp/seventwos-assessment-intake
+          retention-days: 90
+
+      - name: Report-only summary
+        run: |
+          {
+            echo "## Seventwos upstream-assessment intake (report-only)"
+            echo
+            echo "This workflow only archives the artifact(s) below for review."
+            echo "No upstream evaluation, merge, or sync action was taken."
+            echo
+            if [ -s changed_files.txt ]; then
+              echo "### Artifacts"
+              sed 's/^/- /' changed_files.txt
+            else
+              echo "_No new assessment artifacts detected in this run._"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

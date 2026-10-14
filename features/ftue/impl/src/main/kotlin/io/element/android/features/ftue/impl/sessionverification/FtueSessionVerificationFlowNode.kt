@@ -114,6 +114,8 @@ class FtueSessionVerificationFlowNode(
                         verificationRequest = VerificationRequest.Outgoing.CurrentSession,
                     ),
                     callback = object : OutgoingVerificationEntryPoint.Callback {
+                        override fun learnMoreUrl(): String? = null
+
                         override fun onDone() {
                             callback.onDone()
                         }
