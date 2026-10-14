@@ -67,6 +67,7 @@ jobs:
         env:
           ARTIFACT_PATH: ${{ inputs.artifact_path }}
           EVENT_NAME: ${{ github.event_name }}
+          CHECKED_OUT_SHA: ${{ github.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
           BASE_SHA: ${{ steps.base.outputs.sha }}
         run: |
@@ -83,16 +84,24 @@ jobs:
             fi
             printf '%s\n' "$path" > changed_files.txt
           else
+            # Checkout defaults to the event merge result for PRs and merge
+            # groups. Comparing that exact SHA preserves independent base
+            # additions rather than falsely reporting them as PR deletions.
             # --find-renames/--find-copies so a rename/copy of an existing
             # artifact is reported with its real status (R/C), not hidden
             # behind a plain A/D pair.
+            git rev-parse --verify "${CHECKED_OUT_SHA}^{commit}" > /dev/null
             if ! merge_base=$(git merge-base "$BASE_SHA" "$HEAD_SHA"); then
               echo "::error::Cannot determine a merge base for event base '$BASE_SHA' and head '$HEAD_SHA'; failing closed." >&2
               exit 1
             fi
-            git diff --name-status --find-renames --find-copies "$merge_base" "$HEAD_SHA" \
+            git diff --name-status --find-renames --find-copies "$BASE_SHA" "$CHECKED_OUT_SHA" \
               -- '.seventwos/assessments/**' ':!.seventwos/assessments/README.md' \
               > changed_status.txt
+            # Also reject feature mutations masked by changes already on base.
+            git diff --name-status --find-renames --find-copies "$merge_base" "$HEAD_SHA" \
+              -- '.seventwos/assessments/**' ':!.seventwos/assessments/README.md' \
+              > feature_status.txt
             awk '$1 == "A" { print $NF }' changed_status.txt > changed_files.txt
           fi
           echo "count=$(wc -l < changed_files.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
@@ -105,7 +114,7 @@ jobs:
           # Anything other than a clean "Added" (A) is a mutation of an
           # existing immutable artifact: Modified, Deleted, Renamed, Copied,
           # or Type-changed (e.g. replaced by a symlink) all count.
-          disallowed=$(awk '$1 !~ /^A$/ { print }' changed_status.txt || true)
+          disallowed=$(awk '$1 !~ /^A$/ { print }' changed_status.txt feature_status.txt)
           if [ -n "$disallowed" ]; then
             echo "::error::Assessment artifacts are immutable. Only adding new regular files is allowed; the following changes are rejected (status code shown first):"
             echo "$disallowed"

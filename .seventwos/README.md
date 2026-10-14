@@ -44,6 +44,12 @@ without path filters. They validate against the exact event base SHA.
 Assessment intake still enforces immutability when no artifacts are added;
 it archives nothing in that case and does not generate assessment artifacts.
 Policy validation on pushes to `main`/`develop` remains path-scoped.
+Assessment intake compares that base with the exact event merge result
+(`github.sha`), which is also checked out and used for file-mode validation.
+This preserves assessment artifacts independently added on the base branch
+while still rejecting mutations introduced by the PR or merge group.
+For PRs, an additional merge-base-to-feature-head check retains mutation
+detection even when the event merge result matches a change already on base.
 
 ## Explicit non-goals (this change)
 
