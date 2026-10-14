@@ -194,7 +194,9 @@ class TestRequiredWorkflowChecks(unittest.TestCase):
         )
         steps = {step.get("id", step.get("name")): step for step in doc["jobs"]["intake"]["steps"]}
         for event in ("pull_request", "merge_group"):
-            for change in ("unrelated", "readme", "add", "modify", "delete", "rename", "symlink"):
+            for change in (
+                "unrelated", "readme", "base_addition", "add", "modify", "delete", "rename", "symlink"
+            ):
                 with self.subTest(event=event, change=change), tempfile.TemporaryDirectory() as td:
                     repo = Path(td)
                     _init_repo(repo)
@@ -203,21 +205,26 @@ class TestRequiredWorkflowChecks(unittest.TestCase):
                     existing = artifacts / "existing.json"
                     existing.write_text('{"assessment": "original"}\n')
                     base = _commit_all(repo, "base")
-                    if change == "unrelated":
-                        (repo / "application.txt").write_text("unrelated\n")
-                    elif change == "readme":
-                        (artifacts / "README.md").write_text("editable documentation\n")
-                    elif change == "add":
-                        (artifacts / "new.json").write_text('{"assessment": "new"}\n')
-                    elif change == "modify":
-                        existing.write_text('{"assessment": "mutated"}\n')
-                    elif change == "delete":
-                        existing.unlink()
-                    elif change == "rename":
-                        existing.rename(artifacts / "renamed.json")
-                    elif change == "symlink":
-                        (artifacts / "new.json").symlink_to("existing.json")
-                    head = _commit_all(repo, change)
+                    if change == "base_addition":
+                        head = base
+                        (artifacts / "base-only.json").write_text('{"assessment": "base"}\n')
+                        base = _commit_all(repo, "base adds assessment")
+                    else:
+                        if change == "unrelated":
+                            (repo / "application.txt").write_text("unrelated\n")
+                        elif change == "readme":
+                            (artifacts / "README.md").write_text("editable documentation\n")
+                        elif change == "add":
+                            (artifacts / "new.json").write_text('{"assessment": "new"}\n')
+                        elif change == "modify":
+                            existing.write_text('{"assessment": "mutated"}\n')
+                        elif change == "delete":
+                            existing.unlink()
+                        elif change == "rename":
+                            existing.rename(artifacts / "renamed.json")
+                        elif change == "symlink":
+                            (artifacts / "new.json").symlink_to("existing.json")
+                        head = _commit_all(repo, change)
                     env = {
                         **os.environ,
                         "EVENT_NAME": event,
@@ -241,7 +248,7 @@ class TestRequiredWorkflowChecks(unittest.TestCase):
                     if not mutation:
                         regular = run_step("Verify newly added artifacts are regular files")
                         self.assertEqual(regular.returncode != 0, change == "symlink", regular.stderr)
-                    if change in ("unrelated", "readme"):
+                    if change in ("unrelated", "readme", "base_addition"):
                         self.assertEqual((repo / "changed_files.txt").read_text(), "")
                         self.assertIn("count=0", (repo / "output.txt").read_text())
                     env["BASE_SHA"] = "0" * 40

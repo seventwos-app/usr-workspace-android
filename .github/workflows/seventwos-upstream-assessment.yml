@@ -86,7 +86,11 @@ jobs:
             # --find-renames/--find-copies so a rename/copy of an existing
             # artifact is reported with its real status (R/C), not hidden
             # behind a plain A/D pair.
-            git diff --name-status --find-renames --find-copies "$BASE_SHA" "$HEAD_SHA" \
+            if ! merge_base=$(git merge-base "$BASE_SHA" "$HEAD_SHA"); then
+              echo "::error::Cannot determine a merge base for event base '$BASE_SHA' and head '$HEAD_SHA'; failing closed." >&2
+              exit 1
+            fi
+            git diff --name-status --find-renames --find-copies "$merge_base" "$HEAD_SHA" \
               -- '.seventwos/assessments/**' ':!.seventwos/assessments/README.md' \
               > changed_status.txt
             awk '$1 == "A" { print $NF }' changed_status.txt > changed_files.txt
