@@ -2,9 +2,9 @@ name: Seventwos policy validate
 
 # Validates the repository-owned .seventwos upstream-sync policy system
 # (policy.yml, state.yml, path-map.yml, invariants.yml, ledger.jsonl) and its
-# validator's own unit tests. Scoped to .seventwos/**, the validator script,
-# and both seventwos-owned workflow files, so it does not run on unrelated
-# changes. Deliberately uses only GitHub-owned actions so it is unaffected
+# validator's own unit tests. Runs on every PR and merge group so the required
+# check is always emitted; pushes remain scoped to policy/tooling changes.
+# Deliberately uses only GitHub-owned actions so it is unaffected
 # by this repository's org/enterprise-enforced third-party-actions allow-list
 # (see .seventwos/ledger.jsonl, LEDGER-0002/LEDGER-0003).
 #
@@ -18,11 +18,6 @@ name: Seventwos policy validate
 
 on:
   pull_request:
-    paths:
-      - ".seventwos/**"
-      - "scripts/seventwos/**"
-      - ".github/workflows/seventwos-policy-validate.yml"
-      - ".github/workflows/seventwos-upstream-assessment.yml"
   push:
     branches: [ main, develop ]
     paths:

@@ -15,12 +15,12 @@ name: Seventwos upstream assessment
 # run rather than being swallowed, since silently treating an error as
 # "no immutability violation" would defeat the point of this check.
 # assessments/README.md is documentation, not an artifact, and remains
-# editable.
+# editable. Runs on every PR and merge group so the required intake check
+# always validates immutability, even when no new artifacts need archiving.
 
 on:
   pull_request:
-    paths:
-      - ".seventwos/assessments/**"
+  merge_group:
   workflow_dispatch:
     inputs:
       artifact_path:
@@ -48,16 +48,16 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Resolve exact PR base SHA
+      - name: Resolve exact event base SHA
         id: base
-        if: github.event_name == 'pull_request'
+        if: github.event_name != 'workflow_dispatch'
         env:
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
         run: |
           set -euo pipefail
-          base="$PR_BASE_SHA"
+          base="$BASE_SHA"
           if ! git rev-parse --verify "${base}^{commit}" > /dev/null 2>&1; then
-            echo "::error::Cannot resolve PR base sha '$base' as a commit object; failing closed (not treated as 'no prior artifacts')." >&2
+            echo "::error::Cannot resolve event base sha '$base' as a commit object; failing closed (not treated as 'no prior artifacts')." >&2
             exit 1
           fi
           echo "sha=$base" >> "$GITHUB_OUTPUT"
@@ -67,8 +67,9 @@ jobs:
         env:
           ARTIFACT_PATH: ${{ inputs.artifact_path }}
           EVENT_NAME: ${{ github.event_name }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          PR_BASE_SHA: ${{ steps.base.outputs.sha }}
+          CHECKED_OUT_SHA: ${{ github.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
+          BASE_SHA: ${{ steps.base.outputs.sha }}
         run: |
           set -euo pipefail
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
@@ -83,25 +84,37 @@ jobs:
             fi
             printf '%s\n' "$path" > changed_files.txt
           else
+            # Checkout defaults to the event merge result for PRs and merge
+            # groups. Comparing that exact SHA preserves independent base
+            # additions rather than falsely reporting them as PR deletions.
             # --find-renames/--find-copies so a rename/copy of an existing
             # artifact is reported with its real status (R/C), not hidden
             # behind a plain A/D pair.
-            git diff --name-status --find-renames --find-copies "$PR_BASE_SHA" "$HEAD_SHA" \
+            git rev-parse --verify "${CHECKED_OUT_SHA}^{commit}" > /dev/null
+            if ! merge_base=$(git merge-base "$BASE_SHA" "$HEAD_SHA"); then
+              echo "::error::Cannot determine a merge base for event base '$BASE_SHA' and head '$HEAD_SHA'; failing closed." >&2
+              exit 1
+            fi
+            git diff --name-status --find-renames --find-copies "$BASE_SHA" "$CHECKED_OUT_SHA" \
               -- '.seventwos/assessments/**' ':!.seventwos/assessments/README.md' \
               > changed_status.txt
+            # Also reject feature mutations masked by changes already on base.
+            git diff --name-status --find-renames --find-copies "$merge_base" "$HEAD_SHA" \
+              -- '.seventwos/assessments/**' ':!.seventwos/assessments/README.md' \
+              > feature_status.txt
             awk '$1 == "A" { print $NF }' changed_status.txt > changed_files.txt
           fi
           echo "count=$(wc -l < changed_files.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
           cat changed_files.txt
 
       - name: Reject any mutation of existing assessment artifacts
-        if: github.event_name == 'pull_request'
+        if: github.event_name != 'workflow_dispatch'
         run: |
           set -euo pipefail
           # Anything other than a clean "Added" (A) is a mutation of an
           # existing immutable artifact: Modified, Deleted, Renamed, Copied,
           # or Type-changed (e.g. replaced by a symlink) all count.
-          disallowed=$(awk '$1 !~ /^A$/ { print }' changed_status.txt || true)
+          disallowed=$(awk '$1 !~ /^A$/ { print }' changed_status.txt feature_status.txt)
           if [ -n "$disallowed" ]; then
             echo "::error::Assessment artifacts are immutable. Only adding new regular files is allowed; the following changes are rejected (status code shown first):"
             echo "$disallowed"

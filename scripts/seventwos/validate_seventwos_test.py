@@ -6,6 +6,7 @@ Run with: python3 -m unittest scripts/seventwos/validate_seventwos_test.py -v
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -152,6 +153,190 @@ class TestRealFiles(unittest.TestCase):
         errors: list[str] = []
         v.validate_workflow_hardening(WORKFLOWS_ROOT, errors)
         self.assertEqual(errors, [])
+
+
+class TestRequiredWorkflowChecks(unittest.TestCase):
+    def test_required_checks_run_on_all_prs_and_merge_groups(self):
+        for filename, job_id, check_name in (
+            ("seventwos-policy-validate.yml", "seventwos-policy-validate", "seventwos-policy-validate"),
+            ("seventwos-upstream-assessment.yml", "intake", "intake-assessment-artifact"),
+        ):
+            with self.subTest(workflow=filename):
+                doc = v.yaml.safe_load((WORKFLOWS_ROOT / filename).read_text())
+                # PyYAML's YAML 1.1 loader parses the Actions key "on" as True.
+                events = doc[True]
+                for event in ("pull_request", "merge_group"):
+                    self.assertIn(event, events)
+                    self.assertIsNone(events[event])
+                job = doc["jobs"][job_id]
+                self.assertEqual(job["name"], check_name)
+                self.assertNotIn("if", job)
+
+    def test_assessment_uses_exact_event_shas_and_checks_both_events(self):
+        doc = v.yaml.safe_load(
+            (WORKFLOWS_ROOT / "seventwos-upstream-assessment.yml").read_text()
+        )
+        steps = {step.get("id", step.get("name")): step for step in doc["jobs"]["intake"]["steps"]}
+        self.assertEqual(
+            steps["base"]["env"]["BASE_SHA"],
+            "${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}",
+        )
+        self.assertEqual(
+            steps["files"]["env"]["CHECKED_OUT_SHA"],
+            "${{ github.sha }}",
+        )
+        self.assertEqual(
+            steps["Verify newly added artifacts are regular files"]["env"]["CHECKED_OUT_SHA"],
+            steps["files"]["env"]["CHECKED_OUT_SHA"],
+        )
+        checkout = doc["jobs"]["intake"]["steps"][0]
+        self.assertNotIn("ref", checkout["with"])
+        for name in ("base", "Reject any mutation of existing assessment artifacts"):
+            self.assertEqual(steps[name]["if"], "github.event_name != 'workflow_dispatch'")
+
+    def test_assessment_scripts_enforce_immutability_and_allow_empty_intake(self):
+        doc = v.yaml.safe_load(
+            (WORKFLOWS_ROOT / "seventwos-upstream-assessment.yml").read_text()
+        )
+        steps = {step.get("id", step.get("name")): step for step in doc["jobs"]["intake"]["steps"]}
+        for event in ("pull_request", "merge_group"):
+            for change in (
+                "unrelated", "readme", "base_addition", "add", "modify", "delete",
+                "rename", "copy", "type-change", "symlink"
+            ):
+                with self.subTest(event=event, change=change), tempfile.TemporaryDirectory() as td:
+                    repo = Path(td)
+                    _init_repo(repo)
+                    artifacts = repo / ".seventwos" / "assessments"
+                    artifacts.mkdir(parents=True)
+                    existing = artifacts / "existing.json"
+                    existing.write_text('{"assessment": "original"}\n')
+                    base = _commit_all(repo, "base")
+                    if change == "base_addition":
+                        feature_head = base
+                        (artifacts / "base-only.json").write_text('{"assessment": "base"}\n')
+                        base = _commit_all(repo, "base adds assessment")
+                        head = base
+                    else:
+                        if change == "unrelated":
+                            (repo / "application.txt").write_text("unrelated\n")
+                        elif change == "readme":
+                            (artifacts / "README.md").write_text("editable documentation\n")
+                        elif change == "add":
+                            (artifacts / "new.json").write_text('{"assessment": "new"}\n')
+                        elif change == "modify":
+                            existing.write_text('{"assessment": "mutated"}\n')
+                        elif change == "delete":
+                            existing.unlink()
+                        elif change == "rename":
+                            existing.rename(artifacts / "renamed.json")
+                        elif change == "copy":
+                            (artifacts / "copied.json").write_text(existing.read_text())
+                            existing.write_text('{"assessment": "mutated"}\n')
+                        elif change == "type-change":
+                            existing.unlink()
+                            existing.symlink_to("README.md")
+                        elif change == "symlink":
+                            (artifacts / "new.json").symlink_to("existing.json")
+                        head = _commit_all(repo, change)
+                        feature_head = head
+                    env = {
+                        **os.environ,
+                        "EVENT_NAME": event,
+                        "BASE_SHA": base,
+                        "CHECKED_OUT_SHA": head,
+                        "HEAD_SHA": feature_head if event == "pull_request" else head,
+                        "GITHUB_OUTPUT": str(repo / "output.txt"),
+                    }
+
+                    def run_step(name):
+                        return subprocess.run(
+                            ["bash", "-c", steps[name]["run"]],
+                            cwd=repo, env=env, capture_output=True, text=True,
+                        )
+
+                    self.assertEqual(run_step("base").returncode, 0)
+                    self.assertEqual(run_step("files").returncode, 0)
+                    rejection = run_step("Reject any mutation of existing assessment artifacts")
+                    mutation = change in ("modify", "delete", "rename", "copy", "type-change")
+                    self.assertEqual(rejection.returncode != 0, mutation, rejection.stderr)
+                    if not mutation:
+                        regular = run_step("Verify newly added artifacts are regular files")
+                        self.assertEqual(regular.returncode != 0, change == "symlink", regular.stderr)
+                    if change in ("unrelated", "readme", "base_addition"):
+                        self.assertEqual((repo / "changed_files.txt").read_text(), "")
+                        self.assertIn("count=0", (repo / "output.txt").read_text())
+                    env["BASE_SHA"] = "0" * 40
+                    self.assertNotEqual(run_step("base").returncode, 0)
+                    self.assertNotEqual(run_step("files").returncode, 0)
+
+    def test_assessment_checks_merge_result_when_base_adds_artifact(self):
+        doc = v.yaml.safe_load(
+            (WORKFLOWS_ROOT / "seventwos-upstream-assessment.yml").read_text()
+        )
+        steps = {step.get("id", step.get("name")): step for step in doc["jobs"]["intake"]["steps"]}
+        for event in ("pull_request", "merge_group"):
+            for change in ("unrelated", "delete", "rename", "type-change", "masked-modify"):
+                with self.subTest(event=event, change=change), tempfile.TemporaryDirectory() as td:
+                    repo = Path(td)
+                    _init_repo(repo)
+                    _git(repo, "branch", "-M", "event-base")
+                    artifacts = repo / ".seventwos" / "assessments"
+                    artifacts.mkdir(parents=True)
+                    existing = artifacts / "existing.json"
+                    existing.write_text('{"assessment": "original"}\n')
+                    _commit_all(repo, "common ancestor")
+                    _git(repo, "checkout", "-q", "-b", "feature")
+                    (repo / "application.txt").write_text("unrelated\n")
+                    if change == "delete":
+                        existing.unlink()
+                    elif change == "rename":
+                        existing.rename(artifacts / "renamed.json")
+                    elif change == "type-change":
+                        existing.unlink()
+                        existing.symlink_to("README.md")
+                    elif change == "masked-modify":
+                        existing.write_text('{"assessment": "same mutation on both branches"}\n')
+                    feature_head = _commit_all(repo, "feature change")
+                    _git(repo, "checkout", "-q", "event-base")
+                    independent = artifacts / "base-added.json"
+                    independent.write_text('{"assessment": "independent base addition"}\n')
+                    if change == "masked-modify":
+                        existing.write_text('{"assessment": "same mutation on both branches"}\n')
+                    base = _commit_all(repo, "independent base addition")
+                    _git(repo, "merge", "-q", "--no-ff", "feature", "-m", "event merge")
+                    merge_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+                    self.assertTrue(independent.is_file())
+                    env = {
+                        **os.environ,
+                        "EVENT_NAME": event,
+                        "BASE_SHA": base,
+                        "CHECKED_OUT_SHA": merge_sha,
+                        "HEAD_SHA": feature_head if event == "pull_request" else merge_sha,
+                        "GITHUB_OUTPUT": str(repo / "output.txt"),
+                    }
+                    self.assertIn(
+                        "D\t.seventwos/assessments/base-added.json",
+                        _git(repo, "diff", "--name-status", base, feature_head).stdout,
+                    )
+                    for name in ("base", "files"):
+                        result = subprocess.run(
+                            ["bash", "-c", steps[name]["run"]],
+                            cwd=repo, env=env, capture_output=True, text=True,
+                        )
+                        self.assertEqual(result.returncode, 0, result.stderr)
+                    result = subprocess.run(
+                        ["bash", "-c", steps["Reject any mutation of existing assessment artifacts"]["run"]],
+                        cwd=repo, env=env, capture_output=True, text=True,
+                    )
+                    rejected = change != "unrelated" and not (
+                        event == "merge_group" and change == "masked-modify"
+                    )
+                    self.assertEqual(result.returncode != 0, rejected, result.stdout)
+                    self.assertNotIn("base-added.json", (repo / "changed_status.txt").read_text())
+                    if change == "unrelated":
+                        self.assertEqual((repo / "changed_files.txt").read_text(), "")
+                        self.assertIn("count=0", (repo / "output.txt").read_text())
 
 
 class TestPolicyValidation(unittest.TestCase):
