@@ -2,8 +2,7 @@ name: Update Gradle Wrapper
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 0 * * *"
+  # Manual runs remain available while the scheduled startup failure is investigated.
 
 permissions: {}
 
